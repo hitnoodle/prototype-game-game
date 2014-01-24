@@ -4,6 +4,7 @@ public class Coin : Collidable {
 	public Coin(float xPosition, float yPosition, float duration) : base("exa-walk", 0, 0, 0, 0) {
 		//Set attributes
 		m_Duration = duration;
+		m_Activated = false;
 
 		//Set position
 		x = xPosition;
@@ -25,17 +26,21 @@ public class Coin : Collidable {
 	}
 
 	public void UpdateDuration(float duration) {
-		if (!m_Overlay.isVisible) {
-			m_Duration -= duration;
-			if (m_Duration <= 0) {
+		if (m_Activated && !m_Overlay.isVisible) return;
+
+		m_Duration -= duration;
+		if (m_Duration <= 0) {
+			if (!m_Activated) {
+				m_Duration = OVERLAY_DURATION;
 				m_Overlay.isVisible = true;
+				m_Activated = true;
+			} else {
+				m_Overlay.isVisible = false;
 			}
 		}
 	}
 
 	public bool IsTouched(Vector2 pos) {
-		if (!m_Overlay.isVisible) return false;
-
 		float posx = pos.x;
 		float posy = pos.y;
 		Debug.Log(posx + " " + posy + ":" + getLeft() + " " + getRight());
@@ -43,6 +48,13 @@ public class Coin : Collidable {
 		return (posx >= getLeft() && posx <= getRight() && posy >= getBottom() && posy <= getTop() );
 	}
 
+	public bool ShouldBeTouched() {
+		return m_Overlay.isVisible;
+	}
+
 	protected float 	m_Duration;
+	protected bool 		m_Activated;
 	protected FSprite	m_Overlay;
+
+	protected const float OVERLAY_DURATION = 2.0f;
 }
