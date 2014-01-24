@@ -24,8 +24,20 @@ public class Drawable : FContainer {
 	}
 
 	//Accessor
-	public float getWidth()		{ return m_Width;	}
-	public float getHeight()	{ return m_Height;	}
+	public float getWidth()		{ return m_Width;			}
+	public float getHeight()	{ return m_Height;			}
+	public float getScaleX()	{ return m_Sprite.scaleX;	}
+	public float getScaleY()	{ return m_Sprite.scaleY;	}
+
+	protected void SetScaleX(float scaleX) {
+		m_Width *= scaleX / m_Sprite.scaleX;
+		m_Sprite.scaleX = scaleX;
+	}
+	
+	protected void SetScaleY(float scaleY) {
+		m_Height *= scaleY / m_Sprite.scaleY;
+		m_Sprite.scaleY = scaleY;
+	}
 
 	//Data
 	protected float		m_Width;

@@ -16,11 +16,21 @@ public class StateGame : ExaState {
 		//Create components
 		m_Exa 		= new Exa();
 		m_Platforms	= new FContainer();
+		m_Coins		= new FContainer();
+
 		AddChild(m_Platforms);
+		AddChild(m_Coins);
 		AddChild(m_Exa);
 
 		//Create platforms
 		processPlatforms(0);
+
+		//Create coins
+		processCoins(0);
+
+		//Timer for coin
+		m_SpawnCoinTime = 3.0f;
+		m_CurrentCoinTime = m_SpawnCoinTime;
 		
 		Debug.Log("Scale " + Futile.displayScale + " resource scale " + Futile.resourceScale);
 		Debug.Log("width " + Futile.screen.width + " height " + Futile.screen.height);
@@ -34,18 +44,20 @@ public class StateGame : ExaState {
 		//Update
 		m_Exa.update(Platforms);
 		processPlatforms(m_Exa.getOffset());
+		processCoins(m_Exa.getOffset());
 		
 		//Check input
-		InputManager.instance.update(touches);
-		if (InputManager.instance.jumpDetected()) m_Exa.jump();
-		if (InputManager.instance.dashDetected()) m_Exa.dash();
+		//InputManager.instance.update(touches);
+		//if (InputManager.instance.jumpDetected()) m_Exa.jump();
+		//if (InputManager.instance.dashDetected()) m_Exa.dash();
+		checkTouchedCoins(touches);
 	}
 
 	protected void processPlatforms(float offset) {
 		//Initialize
 		float Right			= -Futile.screen.halfWidth;
 		List<FNode> Deads = new List<FNode>();
-	
+		
 		//For each child in the container
 		for (int i = 0; i < m_Platforms.GetChildCount(); i++) {
 			//Get platform
@@ -76,10 +88,73 @@ public class StateGame : ExaState {
 			Right = X + (NewPlatform.getWidth() / 2);
 		}
 	}
-	
+
+	protected void processCoins(float offset) {
+		//Initialize
+		List<FNode> Deads = new List<FNode>();
+		
+		//For each child in the container
+		for (int i = 0; i < m_Coins.GetChildCount(); i++) {
+			//Get platform
+			Coin ACoin = m_Coins.GetChildAt(i) as Coin;
+			if (ACoin != null) {
+				//Move
+				ACoin.x 		-= offset;
+				float CoinRight	 = ACoin.x + (ACoin.getWidth() / 2);
+				if (CoinRight < 0) 	Deads.Add(ACoin);
+
+				//Update duration
+				ACoin.UpdateDuration(Time.deltaTime);
+			}
+		}
+		
+		//Remove dead coins
+		for (int i = 0; i < Deads.Count; i++) m_Coins.RemoveChild(Deads[i]);
+		
+		//Spawn
+		m_CurrentCoinTime -= Time.deltaTime;
+		if (m_CurrentCoinTime <= 0f) {
+			//Create
+			float X 				= Futile.screen.width + (Random.Range(0, 6) * 40);
+			float Y 				= Random.Range(0, ((int)(Futile.screen.height / 40) + 1)) * 40;
+			Coin NewCoin			= new Coin(X, Y, 2f);
+			
+			//Add
+			m_Coins.AddChild(NewCoin);
+			
+			//Reset
+			m_CurrentCoinTime = m_SpawnCoinTime;
+		}
+	}
+
+	protected void checkTouchedCoins(FTouch[] touches) {
+		//Initialize
+		List<FNode> Deads = new List<FNode>();
+		
+		//For each child in the container
+		for (int i = 0; i < m_Coins.GetChildCount(); i++) {
+			//Get coins
+			Coin ACoin = m_Coins.GetChildAt(i) as Coin;
+			if (ACoin != null) {
+				foreach(FTouch touch in touches) {
+					if (ACoin.IsTouched(touch.position)) {
+						Deads.Add(ACoin);
+						break;
+					}
+				}
+			}	
+		}
+		
+		//Remove dead coins
+		for (int i = 0; i < Deads.Count; i++) m_Coins.RemoveChild(Deads[i]);
+	}
+
 	//Data
+	protected float m_SpawnCoinTime;
+	protected float m_CurrentCoinTime;
 	
 	//Components
 	protected Exa			m_Exa;
 	protected FContainer	m_Platforms;
+	protected FContainer	m_Coins;
 }
