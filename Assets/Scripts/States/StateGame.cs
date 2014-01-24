@@ -5,7 +5,8 @@ using UnityEngine;
 public class StateGame : ExaState {
 	public StateGame(): base(GAME) {
 		//Initialize
-		m_Coin = 9;
+		m_Coin 		= 9;
+		m_Health	= 3;
 	
 		//Create background
 		FSprite Background = new FSprite("rect") { 
@@ -28,7 +29,6 @@ public class StateGame : ExaState {
 		//Create components
 		m_Exa 		= new Exa();
 		m_Coins		= new FContainer();
-
 		AddChild(m_Coins);
 		AddChild(m_Exa);
 
@@ -40,14 +40,19 @@ public class StateGame : ExaState {
 		m_CurrentCoinTime = m_SpawnCoinTime;
 		
 		//Create interface
-		m_CoinCounter = new FLabel("font", "");
+		m_Coin--;
+		m_Health++;
+		m_CoinCounter 	= new FLabel("font", "");
+		m_HealthCounter = new FLabel("font", "");
+		AddChild(m_HealthCounter);
 		AddChild(m_CoinCounter);
+		decrementHealth();
 		incrementCoin();
 	}
 
 	public override void onUpdate(FTouch[] touches) {
 		//Update
-		m_Exa.update(Platforms);
+		m_Exa.update();
 		processCoins(m_Exa.getOffset());
 		
 		//Check input
@@ -62,6 +67,16 @@ public class StateGame : ExaState {
 		m_CoinCounter.text 	= m_Coin + " Coins";
 		m_CoinCounter.x 	= Futile.screen.width - 12 - (m_CoinCounter.textRect.width * 0.5f);
 		m_CoinCounter.y 	= Futile.screen.height - 12 - (m_CoinCounter.textRect.height * 0.5f);
+	}
+	
+	public void decrementHealth() {
+		//Decrease
+		m_Health--;
+		
+		//Refresh
+		m_HealthCounter.text 	= "Error: " + (3 - m_Health);
+		m_HealthCounter.x 		= 12 + (m_HealthCounter.textRect.width * 0.5f);
+		m_HealthCounter.y 		= 4 + (m_HealthCounter.textRect.height * 0.5f);
 	}
 
 	protected void processCoins(float offset) {
@@ -125,9 +140,10 @@ public class StateGame : ExaState {
 	}
 
 	//Data
+	protected int 	m_Coin;
+	protected int 	m_Health;
 	protected float m_SpawnCoinTime;
 	protected float m_CurrentCoinTime;
-	protected int m_Coin;
 	
 	//Components
 	protected Exa			m_Exa;
@@ -135,4 +151,5 @@ public class StateGame : ExaState {
 	
 	//Interface
 	protected FLabel m_CoinCounter;
+	protected FLabel m_HealthCounter;
 }
