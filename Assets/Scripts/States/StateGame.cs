@@ -108,8 +108,13 @@ public class StateGame : ExaState {
 			if (ACoin != null) {
 				//Move
 				ACoin.x 		-= offset;
+
+				//Coin dead, assumed player not clicking
 				float CoinRight	 = ACoin.x + (ACoin.getWidth() / 2);
-				if (CoinRight < 0) 	Deads.Add(ACoin);
+				if (CoinRight < 0) {
+					Deads.Add(ACoin);
+					decrementHealth();
+				}
 
 				//Update duration
 				bool ShouldTouch = ACoin.ShouldBeTouched();
@@ -148,6 +153,8 @@ public class StateGame : ExaState {
 				foreach(FTouch touch in touches) {
 					if (ACoin.IsTouched(touch.position)) {
 						Deads.Add(ACoin);
+						if (!ACoin.ShouldBeTouched()) decrementHealth();
+
 						break;
 					}
 				}
