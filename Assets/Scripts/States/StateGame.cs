@@ -106,8 +106,7 @@ public class StateGame : ExaState {
 		if (m_CurrentCoinTime <= 0f) {
 			//Create
 			float X 				= Futile.screen.width + (Random.Range(0, 6) * 40);
-			float Y 				= Random.Range(0, ((int)(Futile.screen.height / 40) + 1)) * 40;
-			Coin NewCoin			= new Coin(X, Y, 2f);
+			Coin NewCoin			= new Coin(X, m_Exa.GetPosition().y, 2f);
 			
 			//Add
 			m_Coins.AddChild(NewCoin);
