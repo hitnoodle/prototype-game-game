@@ -1,4 +1,6 @@
 
+using UnityEngine;
+
 public class Drawable : FContainer {
 	public Drawable(string name) {
 		//Initialize
@@ -28,6 +30,11 @@ public class Drawable : FContainer {
 	public float getHeight()	{ return m_Height;			}
 	public float getScaleX()	{ return m_Sprite.scaleX;	}
 	public float getScaleY()	{ return m_Sprite.scaleY;	}
+	
+	public void setColor(float r, float g, float b, float a) {
+		//IF sprite exist
+		if (m_Sprite != null) m_Sprite.color = new Color(r, g, b, a);
+	}
 
 	protected void SetScaleX(float scaleX) {
 		m_Width *= scaleX / m_Sprite.scaleX;
