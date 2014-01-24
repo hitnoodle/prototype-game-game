@@ -36,8 +36,8 @@ public class StateGame : ExaState {
 		processCoins(0);
 
 		//Timer for coin
-		m_SpawnCoinTime = 3.0f;
-		m_CurrentCoinTime = m_SpawnCoinTime;
+		m_SpawnCoinTime 	= 2.0f;
+		m_CurrentCoinTime 	= m_SpawnCoinTime;
 		
 		//Create interface
 		m_HealthCounter 	= new FLabel("font", "");
@@ -107,7 +107,7 @@ public class StateGame : ExaState {
 			Coin ACoin = m_Coins.GetChildAt(i) as Coin;
 			if (ACoin != null) {
 				//Move
-				ACoin.x 		-= offset;
+				ACoin.x -= offset;
 
 				//Coin dead, assumed player not clicking
 				float CoinRight	 = ACoin.x + (ACoin.getWidth() / 2);
@@ -130,8 +130,9 @@ public class StateGame : ExaState {
 		m_CurrentCoinTime -= Time.deltaTime;
 		if (m_CurrentCoinTime <= 0f) {
 			//Create
-			float X 				= Futile.screen.width + (Random.Range(0, 6) * 40);
-			Coin NewCoin			= new Coin(X, m_Exa.GetPosition().y, 2f);
+			float X 		= Futile.screen.width + (Random.Range(0, 6) * 40);
+			float Y			= Futile.screen.height / 16.0f * (float)(Random.Range(6, 14));
+			Coin NewCoin	= new Coin(X, Y, 2f);
 			
 			//Add
 			m_Coins.AddChild(NewCoin);
@@ -167,7 +168,11 @@ public class StateGame : ExaState {
 	
 	protected void processCoinCounter(FTouch[] touches) {
 		//If there's counter
-		if (m_CoinCounterTime > 0) m_CoinCounterTime -= Time.deltaTime;
+		if (m_CoinCounterTime > 0) {
+			//Manage time
+			m_CoinCounterTime -= Time.deltaTime;
+			if (m_CoinCounterTime <= 0 && !m_CounterOverlay.isVisible) decrementHealth();
+		}
 		m_CounterOverlay.isVisible = m_CoinCounterTime > 0;
 	
 		//For each touch

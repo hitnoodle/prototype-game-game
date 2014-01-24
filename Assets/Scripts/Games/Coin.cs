@@ -56,5 +56,5 @@ public class Coin : Collidable {
 	protected bool 		m_Activated;
 	protected FSprite	m_Overlay;
 
-	protected const float OVERLAY_DURATION = 2.0f;
+	protected const float OVERLAY_DURATION = 0.75f;
 }

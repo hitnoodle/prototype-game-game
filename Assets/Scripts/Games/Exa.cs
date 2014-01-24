@@ -105,7 +105,7 @@ public class Exa : Collidable {
 	protected const float JUMP_SPEED 				= 280;
 	protected const float DASH_SPEED 				= 280;
 	protected const float DASH_ACCEL 				= -200;
-	protected const float DEFAULT_SPEED_X 			= 200;
+	protected const float DEFAULT_SPEED_X 			= 300;
 	protected const float DEFAULT_SPEED_Y 			= -50;
 	protected const float MINIMUM_SPEED_Y 			= -100;
 	protected const float DEFAULT_ACCELERATION_Y 	= -500;
