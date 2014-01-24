@@ -40,12 +40,23 @@ public class StateGame : ExaState {
 		m_CurrentCoinTime = m_SpawnCoinTime;
 		
 		//Create interface
+		m_HealthCounter 	= new FLabel("font", "");
+		m_CoinCounter 		= new FLabel("font", "");
+		m_CounterOverlay 	= new FSprite("rect") {
+			x = 0, 
+			y = 0, 
+			width = m_CoinCounter.textRect.width, 
+			height = m_CoinCounter.textRect.height, 
+			color = new Color(255.0f, 255.0f, 255.0f, 0.35f) 
+		};
+		m_CounterOverlay.isVisible = false;
+		
+		//Prepare
 		m_Coin--;
 		m_Health++;
-		m_CoinCounter 	= new FLabel("font", "");
-		m_HealthCounter = new FLabel("font", "");
-		AddChild(m_HealthCounter);
 		AddChild(m_CoinCounter);
+		AddChild(m_HealthCounter);
+		AddChild(m_CounterOverlay);
 		decrementHealth();
 		incrementCoin();
 	}
@@ -57,6 +68,7 @@ public class StateGame : ExaState {
 		
 		//Check input
 		checkTouchedCoins(touches);
+		processCoinCounter(touches);
 	}
 	
 	public void incrementCoin() {
@@ -67,6 +79,12 @@ public class StateGame : ExaState {
 		m_CoinCounter.text 	= m_Coin + " Coins";
 		m_CoinCounter.x 	= Futile.screen.width - 12 - (m_CoinCounter.textRect.width * 0.5f);
 		m_CoinCounter.y 	= Futile.screen.height - 12 - (m_CoinCounter.textRect.height * 0.5f);
+		
+		//Refresh overlay
+		m_CounterOverlay.x 		= m_CoinCounter.x;
+		m_CounterOverlay.y 		= m_CoinCounter.y;
+		m_CounterOverlay.width	= m_CoinCounter.textRect.width;
+		m_CounterOverlay.height	= m_CoinCounter.textRect.height;
 	}
 	
 	public void decrementHealth() {
@@ -94,7 +112,9 @@ public class StateGame : ExaState {
 				if (CoinRight < 0) 	Deads.Add(ACoin);
 
 				//Update duration
+				bool ShouldTouch = ACoin.ShouldBeTouched();
 				ACoin.UpdateDuration(Time.deltaTime);
+				if (!ShouldTouch && ACoin.ShouldBeTouched()) m_CoinCounterTime = 2.0f;
 			}
 		}
 		
@@ -137,18 +157,50 @@ public class StateGame : ExaState {
 		//Remove dead coins
 		for (int i = 0; i < Deads.Count; i++) m_Coins.RemoveChild(Deads[i]);
 	}
+	
+	protected void processCoinCounter(FTouch[] touches) {
+		//If there's counter
+		if (m_CoinCounterTime > 0) m_CoinCounterTime -= Time.deltaTime;
+		m_CounterOverlay.isVisible = m_CoinCounterTime > 0;
+	
+		//For each touch
+		bool Touched = false;
+		for (int i = 0; i < touches.Length && !Touched; i++) {
+			//If done
+			if (touches[i].phase == TouchPhase.Ended) {
+				//Check position
+				float TouchX 		= touches[i].position.x;
+				float TouchY 		= touches[i].position.y;
+				float HalfWidth		= m_CoinCounter.textRect.width * 0.5f;
+				float HalfHeight 	= m_CoinCounter.textRect.height * 0.5f;
+				if (TouchX >= m_CoinCounter.x - HalfWidth && TouchX <= m_CoinCounter.x + HalfWidth && TouchY >= m_CoinCounter.y - HalfHeight && TouchY <= m_CoinCounter.y + HalfHeight) Touched = true;
+			}	
+		}
+		
+		//If touched
+		if (Touched) {
+			//Decrease health if not time
+			if (m_CoinCounterTime <= 0) decrementHealth();
+			
+			//Pressed
+			incrementCoin();
+			m_CoinCounterTime = 0;
+		}
+	}
 
 	//Data
 	protected int 	m_Coin;
 	protected int 	m_Health;
 	protected float m_SpawnCoinTime;
 	protected float m_CurrentCoinTime;
+	protected float m_CoinCounterTime;
 	
 	//Components
 	protected Exa			m_Exa;
 	protected FContainer	m_Coins;
 	
 	//Interface
-	protected FLabel m_CoinCounter;
-	protected FLabel m_HealthCounter;
+	protected FLabel 	m_CoinCounter;
+	protected FLabel 	m_HealthCounter;
+	protected FSprite	m_CounterOverlay;
 }
