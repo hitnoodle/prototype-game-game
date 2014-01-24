@@ -4,8 +4,11 @@ using UnityEngine;
 
 public class StateGame : ExaState {
 	public StateGame(): base(GAME) {
+		//Initialize
+		m_Coin = 9;
+	
 		//Create background
-		FSprite Background	= new FSprite("rect") { 
+		FSprite Background = new FSprite("rect") { 
 			x = Futile.screen.halfWidth, 
 			y = Futile.screen.halfHeight, 
 			width = Futile.screen.width, 
@@ -13,17 +16,21 @@ public class StateGame : ExaState {
 			color = new Color(86.0f / 256.0f, 181.0f / 256.0f, 1.0f, 1.0f) };
 		AddChild(Background);
 		
+		//Create platform
+		FSprite Base = new FSprite("rect") { 
+			x = Futile.screen.halfWidth, 
+			y = Futile.screen.halfHeight * 0.25f, 
+			width = Futile.screen.width, 
+			height = Futile.screen.halfHeight * 0.5f, 
+			color = new Color(0.0f, 1.0f, 0.0f, 1.0f) };
+		AddChild(Base);
+		
 		//Create components
 		m_Exa 		= new Exa();
-		m_Platforms	= new FContainer();
 		m_Coins		= new FContainer();
 
-		AddChild(m_Platforms);
 		AddChild(m_Coins);
 		AddChild(m_Exa);
-
-		//Create platforms
-		processPlatforms(0);
 
 		//Create coins
 		processCoins(0);
@@ -32,61 +39,29 @@ public class StateGame : ExaState {
 		m_SpawnCoinTime = 3.0f;
 		m_CurrentCoinTime = m_SpawnCoinTime;
 		
-		Debug.Log("Scale " + Futile.displayScale + " resource scale " + Futile.resourceScale);
-		Debug.Log("width " + Futile.screen.width + " height " + Futile.screen.height);
+		//Create interface
+		m_CoinCounter = new FLabel("font", "");
+		AddChild(m_CoinCounter);
+		incrementCoin();
 	}
 
 	public override void onUpdate(FTouch[] touches) {
-		//Get platform arrays
-		Collidable[] Platforms = new Collidable[m_Platforms.GetChildCount()];
-		for (int i = 0; i < Platforms.Length; i++) Platforms[i] = m_Platforms.GetChildAt(i) as Collidable;
-	
 		//Update
 		m_Exa.update(Platforms);
-		processPlatforms(m_Exa.getOffset());
 		processCoins(m_Exa.getOffset());
 		
 		//Check input
-		//InputManager.instance.update(touches);
-		//if (InputManager.instance.jumpDetected()) m_Exa.jump();
-		//if (InputManager.instance.dashDetected()) m_Exa.dash();
 		checkTouchedCoins(touches);
 	}
-
-	protected void processPlatforms(float offset) {
-		//Initialize
-		float Right			= -Futile.screen.halfWidth;
-		List<FNode> Deads = new List<FNode>();
+	
+	public void incrementCoin() {
+		//Add
+		m_Coin++;
 		
-		//For each child in the container
-		for (int i = 0; i < m_Platforms.GetChildCount(); i++) {
-			//Get platform
-			Drawable APlatform = m_Platforms.GetChildAt(i) as Drawable;
-			if (APlatform != null) {
-				//Move
-				APlatform.x 		-= offset;
-				float PlatformRight	 = APlatform.x + (APlatform.getWidth() / 2);
-				if (PlatformRight < -Futile.screen.halfWidth) 	Deads.Add(APlatform);
-				if (PlatformRight > Right) 						Right = PlatformRight;
-			}
-		}
-		
-		//Remove dead platforms
-		for (int i = 0; i < Deads.Count; i++) m_Platforms.RemoveChild(Deads[i]);
-		
-		//While right is less
-		while (Right < Futile.screen.width * 1.5f) {
-			//Create
-			float X 				= Right + (Random.Range(0, 6) * 40);
-			float Y 				= Random.Range(0, ((int)(Futile.screen.height / 40) + 1)) * 40;
-			Platform NewPlatform	= new Platform(X, Y);
-			
-			//Add
-			m_Platforms.AddChild(NewPlatform);
-			
-			//Save
-			Right = X + (NewPlatform.getWidth() / 2);
-		}
+		//Refresh
+		m_CoinCounter.text 	= m_Coin + " Coins";
+		m_CoinCounter.x 	= Futile.screen.width - 12 - (m_CoinCounter.textRect.width * 0.5f);
+		m_CoinCounter.y 	= Futile.screen.height - 12 - (m_CoinCounter.textRect.height * 0.5f);
 	}
 
 	protected void processCoins(float offset) {
@@ -152,9 +127,12 @@ public class StateGame : ExaState {
 	//Data
 	protected float m_SpawnCoinTime;
 	protected float m_CurrentCoinTime;
+	protected int m_Coin;
 	
 	//Components
 	protected Exa			m_Exa;
-	protected FContainer	m_Platforms;
 	protected FContainer	m_Coins;
+	
+	//Interface
+	protected FLabel m_CoinCounter;
 }

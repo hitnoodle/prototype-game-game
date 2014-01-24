@@ -13,7 +13,7 @@ public class Exa : Collidable {
 		
 		//Set position
 		x = Futile.screen.width * 0.2f;
-		y = Futile.screen.height * 0.2f;
+		y = (Futile.screen.height * 0.25f) + (getHeight() * 0.5f);
 	}
 	
 	public float getOffset() { return m_OffsetX; }
@@ -41,7 +41,7 @@ public class Exa : Collidable {
 		m_AccelX 	= DEFAULT_ACCELERATION_Y;
 	}
 	
-	public void update(Collidable[] platforms) {
+	public void update() {
 		//Manage speed
 		m_SpeedX += m_AccelX * Time.deltaTime;
 		if (m_SpeedX < DEFAULT_SPEED_X) {
@@ -56,11 +56,11 @@ public class Exa : Collidable {
 		//If not dashing
 		if (m_SpeedX <= DEFAULT_SPEED_X) {
 			//Manage height
-			m_SpeedY 	+= m_AccelY * Time.deltaTime;
+			/*m_SpeedY 	+= m_AccelY * Time.deltaTime;
 			y 			+= m_SpeedY * Time.deltaTime;
 			
 			//Check platforms
-			bool Landed	= checkPlatforms(platforms);
+			/bool Landed	= checkPlatforms(platforms);
 			if (y < (m_Height / 2) - 1) {
 				//Limit
 				y 			= (m_Height / 2) - 1;
@@ -72,7 +72,7 @@ public class Exa : Collidable {
 				//Reset
 				m_SpeedY 	= DEFAULT_SPEED_Y;
 				m_Jump		= 0;
-			}
+			}*/
 		}
 	}
 	
