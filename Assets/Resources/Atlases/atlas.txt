@@ -1,0 +1,36 @@
+{"frames": {
+
+"exa-jump.png":
+{
+	"frame": {"x":162,"y":1,"w":124,"h":97},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":2,"w":124,"h":97},
+	"sourceSize": {"w":126,"h":99}
+},
+"exa-walk.png":
+{
+	"frame": {"x":287,"y":1,"w":122,"h":99},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":4,"y":0,"w":122,"h":99},
+	"sourceSize": {"w":126,"h":99}
+},
+"font.png":
+{
+	"frame": {"x":1,"y":1,"w":160,"h":508},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":2,"y":2,"w":160,"h":508},
+	"sourceSize": {"w":256,"h":512}
+}},
+"meta": {
+	"app": "http://www.codeandweb.com/texturepacker ",
+	"version": "1.0",
+	"image": "atlas.png",
+	"format": "RGBA8888",
+	"size": {"w":512,"h":512},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:479778d00335eb91f54088f82e003efe:db16ad5458d6aea437d71e93e83c34a7:b2cf441629818f6c24bd2ce3105f608b$"
+}
+}
