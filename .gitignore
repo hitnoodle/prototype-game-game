@@ -1,0 +1,12 @@
+#Ignore temporary
+Library/
+Temp/
+Build/
+bin/
+obj/
+_ReSharper*/
+*.sln*
+*.suo
+*.csproj
+*.pidb
+*.userprefs
