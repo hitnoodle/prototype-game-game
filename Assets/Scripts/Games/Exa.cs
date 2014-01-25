@@ -12,8 +12,8 @@ public class Exa : Collidable {
 		m_Jump		= 0;
 		
 		//Set position
-		x = Futile.screen.width * 0.2f;
-		y = (Futile.screen.height * 0.25f) + (getHeight() * 0.5f);
+		x = Constants.UNITY_CANVAS_LEFT + (Constants.UNITY_CANVAS_WIDTH * 0.2f);
+		y = (Constants.UNITY_CANVAS_BOTTOM + (Constants.UNITY_CANVAS_HEIGHT * 0.25f)) + (getHeight() * 0.5f);
 	}
 	
 	public float getOffset() { return m_OffsetX; }

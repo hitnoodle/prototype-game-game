@@ -7,15 +7,15 @@ public class StateResult : ExaState {
 		m_Game = game;
 
 		//Create labels
-		FLabel Title		= new FLabel("font", "Crashed!") { x = Futile.screen.halfWidth, y =  Futile.screen.halfHeight * 1.5f };
-		FLabel Result		= new FLabel("font", "Metacritic: 6.5/10") { x = Futile.screen.halfWidth, y =  Futile.screen.halfHeight };
-		FSprite Background	= new FSprite("rect") { x = Futile.screen.halfWidth, y = Futile.screen.halfHeight, width = Futile.screen.width, height = Futile.screen.height, color = new Color(0, 0, 0, 0.5f) };
+		FLabel Title		= new FLabel("font", "Crashed!") { x = Constants.UNITY_CENTER_X, y = Constants.UNITY_CANVAS_BOTTOM + (Constants.UNITY_CANVAS_HEIGHT * 0.75f) };
+		FLabel Result		= new FLabel("font", "Metacritic: 6.5/10") { x = Constants.UNITY_CENTER_X, y =  Constants.UNITY_CENTER_Y };
+		FSprite Background	= new FSprite("rect") { x = Constants.UNITY_CENTER_X, y = Constants.UNITY_CENTER_Y, width = Constants.UNITY_CANVAS_WIDTH, height = Constants.UNITY_CANVAS_HEIGHT, color = new Color(0, 0, 0, 0.5f) };
 		AddChild(Background);
 		AddChild(Result);
 		AddChild(Title);
 
 		//Create buttons
-		m_ButtonRetry	= new FButton("button-pause", "button-pause", "button-pause-hover", "cursor") { x = Futile.screen.halfWidth, y = Futile.screen.height * 0.25f};
+		m_ButtonRetry	= new FButton("button-pause", "button-pause", "button-pause-hover", "cursor") { x = Constants.UNITY_CENTER_X, y = Constants.UNITY_CANVAS_BOTTOM + (Constants.UNITY_CANVAS_HEIGHT * 0.25f)};
 		m_ButtonRetry.AddLabel("font", "Restart Game", Color.white);
 		m_ButtonRetry.SignalRelease += onPress;
 		AddChild(m_ButtonRetry);

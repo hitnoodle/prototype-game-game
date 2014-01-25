@@ -12,12 +12,12 @@ public class StateGame : ExaState {
 		m_Started				= false;
 	
 		//Create backgrounds
-		m_Background11 		= new FSprite("clouds") { x = Futile.screen.halfWidth, y = Futile.screen.halfHeight };
-		m_Background12 		= new FSprite("clouds") { x = Futile.screen.width * 1.5f, y = Futile.screen.halfHeight };
-		m_Background22 		= new FSprite("hills") { x = Futile.screen.width * 1.5f };
-		m_Background21 		= new FSprite("hills") { x = Futile.screen.halfWidth };
-		m_Background21.y	= m_Background21.textureRect.height * 0.5f;
-		m_Background22.y	= m_Background22.textureRect.height * 0.5f;
+		m_Background11 		= new FSprite("clouds") { x = Constants.UNITY_CENTER_X, y = Constants.UNITY_CENTER_Y };
+		m_Background12 		= new FSprite("clouds") { x = Constants.UNITY_CANVAS_RIGHT + (Constants.UNITY_CANVAS_WIDTH / 2f), y = Constants.UNITY_CENTER_Y };
+		m_Background22 		= new FSprite("hills") 	{ x = Constants.UNITY_CANVAS_RIGHT + (Constants.UNITY_CANVAS_WIDTH / 2f) };
+		m_Background21 		= new FSprite("hills") 	{ x = Constants.UNITY_CENTER_X };
+		m_Background21.y	= Constants.UNITY_CANVAS_BOTTOM + m_Background21.textureRect.height * 0.5f;
+		m_Background22.y	= Constants.UNITY_CANVAS_BOTTOM + m_Background22.textureRect.height * 0.5f;
 		AddChild(m_Background11);
 		AddChild(m_Background12);
 		AddChild(m_Background21);
@@ -47,6 +47,12 @@ public class StateGame : ExaState {
 		AddChild(m_ErrorCounter);
 		AddChild(m_HealthCounter);
 		AddChild(m_HealthOverlay);
+
+		//Create unity canvas
+		m_Unity = new FSprite("unity") { x = Futile.screen.halfWidth, y = Futile.screen.halfHeight };
+
+		//Add
+		AddChild(m_Unity);
 	}
 	
 	public void start() {
@@ -70,7 +76,7 @@ public class StateGame : ExaState {
 		m_Gameover				= false;
 		m_EnemyTimer			= 2.0f;
 		m_PlayerBulletTimer		= 0;
-		m_PlayerBulletBorder 	= Futile.screen.width - 25;
+		m_PlayerBulletBorder 	= Constants.UNITY_CANVAS_RIGHT - 32;
 		m_PlayerBullets.RemoveAllChildren();
 		m_EnemyBullets.RemoveAllChildren();
 		m_Enemies.RemoveAllChildren();
@@ -79,10 +85,10 @@ public class StateGame : ExaState {
 		m_HealthChanges.Clear();
 		
 		//Reset background
-		m_Background11.x = Futile.screen.halfWidth;
-		m_Background12.x = Futile.screen.width * 1.5f;
-		m_Background22.x = Futile.screen.width * 1.5f;
-		m_Background21.x = Futile.screen.halfWidth;
+		m_Background11.x = Constants.UNITY_CENTER_X;
+		m_Background12.x = Constants.UNITY_CANVAS_RIGHT + (Constants.UNITY_CANVAS_WIDTH / 2f);
+		m_Background22.x = Constants.UNITY_CANVAS_RIGHT + (Constants.UNITY_CANVAS_WIDTH / 2f);
+		m_Background21.x = Constants.UNITY_CENTER_X;
 		
 		//Prepare interface
 		m_Error--;
@@ -152,12 +158,12 @@ public class StateGame : ExaState {
 		
 		//Refresh
 		m_ScoreCounter.text = "Score: " + m_Score;
-		m_ScoreCounter.x 	= Futile.screen.width - 12 - (m_ScoreCounter.textRect.width * 0.5f);
-		m_ScoreCounter.y 	= Futile.screen.height - 12 - (m_ScoreCounter.textRect.height * 0.5f);
+		m_ScoreCounter.x 	= Constants.UNITY_CANVAS_RIGHT - 12 - (m_ScoreCounter.textRect.width * 0.5f);
+		m_ScoreCounter.y 	= Constants.UNITY_CANVAS_TOP - 12 - (m_ScoreCounter.textRect.height * 0.5f);
 		
 		//Refresh overlay
-		m_ScoreOverlay.x 		= m_ScoreCounter.x;
-		m_ScoreOverlay.y 		= m_ScoreCounter.y;
+		m_ScoreOverlay.x 	= m_ScoreCounter.x;
+		m_ScoreOverlay.y 	= m_ScoreCounter.y;
 	}
 	
 	protected void changeHealth() {
@@ -171,8 +177,8 @@ public class StateGame : ExaState {
 		
 		//Refresh
 		m_HealthCounter.text 	= "Health: " + (int)m_Health;
-		m_HealthCounter.x 		= 12 + (m_HealthCounter.textRect.width * 0.5f);
-		m_HealthCounter.y 		= Futile.screen.height - 12 - (m_HealthCounter.textRect.height * 0.5f);
+		m_HealthCounter.x 		= Constants.UNITY_CANVAS_LEFT + 12 + (m_HealthCounter.textRect.width * 0.5f);
+		m_HealthCounter.y 		= Constants.UNITY_CANVAS_TOP - 12 - (m_HealthCounter.textRect.height * 0.5f);
 		
 		//Refresh overlay
 		m_HealthOverlay.x 		= m_HealthCounter.x;
@@ -191,8 +197,8 @@ public class StateGame : ExaState {
 		
 		//Refresh
 		m_ErrorCounter.text 	= "Error: " + m_Error;
-		m_ErrorCounter.x 		= 12 + (m_ErrorCounter.textRect.width * 0.5f);
-		m_ErrorCounter.y 		= 4 + (m_ErrorCounter.textRect.height * 0.5f);
+		m_ErrorCounter.x 		= Constants.UNITY_CANVAS_LEFT + 12 + (m_ErrorCounter.textRect.width * 0.5f);
+		m_ErrorCounter.y 		= Constants.UNITY_CANVAS_BOTTOM + 4 + (m_ErrorCounter.textRect.height * 0.5f);
 		
 		//SFX
 		if (sfx && !m_Gameover) FSoundManager.PlaySound("error");
@@ -275,13 +281,13 @@ public class StateGame : ExaState {
 		m_Background22.x -= m_Exa.getOffset() * 0.5f;
 		
 		//Loop
-		if (m_Background11.x <= -Futile.screen.halfWidth) {
-			m_Background11.x += Futile.screen.width;
-			m_Background12.x += Futile.screen.width;
+		if (m_Background11.x <= Constants.UNITY_CANVAS_LEFT - (Constants.UNITY_CANVAS_WIDTH / 2f)) {
+			m_Background11.x += Constants.UNITY_CANVAS_WIDTH;
+			m_Background12.x += Constants.UNITY_CANVAS_WIDTH;
 		}
-		if (m_Background21.x <= -Futile.screen.halfWidth) {
-			m_Background21.x += Futile.screen.width;
-			m_Background22.x += Futile.screen.width;
+		if (m_Background21.x <= Constants.UNITY_CANVAS_LEFT - (Constants.UNITY_CANVAS_WIDTH / 2f)) {
+			m_Background21.x += Constants.UNITY_CANVAS_WIDTH;
+			m_Background22.x += Constants.UNITY_CANVAS_WIDTH;
 		}
 	}
 	
@@ -448,8 +454,8 @@ public class StateGame : ExaState {
 		m_EnemyTimer -= Time.deltaTime;
 		if (m_EnemyTimer <= 0f) {
 			//Create
-			float X 	= Futile.screen.width + 61.0f; //Hardcode width / 2
-			float Y		= Futile.screen.height / 12.0f * (float)(Random.Range(3, 10));
+			float X 	= Constants.UNITY_CANVAS_RIGHT + 61.0f; //Hardcode width / 2
+			float Y		= Constants.UNITY_CANVAS_BOTTOM + (Constants.UNITY_CANVAS_HEIGHT / 12.0f * (float)(Random.Range(3, 10)));
 			Enemy enemy = new Enemy(X,Y);
 			
 			//Add
@@ -566,6 +572,7 @@ public class StateGame : ExaState {
 	protected FSprite		m_Background12;
 	protected FSprite		m_Background21;
 	protected FSprite		m_Background22;
+	protected FSprite		m_Unity;
 	
 	//Interface
 	protected FLabel 	m_ScoreCounter;

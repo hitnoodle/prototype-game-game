@@ -9,8 +9,8 @@ public class StateTitle : ExaState {
 		m_StartTime = START_DURATION * 2;
 		
 		//Create stuff
-		m_Title			= new FLabel("font", "ANGRY CHICKEN SAGA") { x = Futile.screen.halfWidth, y = Futile.screen.height * 0.75f };
-		m_Instruction1	= new FLabel("font", "Click screen to play") { x = Futile.screen.halfWidth, y = Futile.screen.height * 0.2f };
+		m_Title			= new FLabel("font", "ANGRY CHICKEN SAGA") 		{ x = Constants.UNITY_CENTER_X, y = Constants.UNITY_CANVAS_BOTTOM + (Constants.UNITY_CANVAS_HEIGHT * 0.75f) };
+		m_Instruction1	= new FLabel("font", "Click screen to play") 	{ x = Constants.UNITY_CENTER_X, y = Constants.UNITY_CANVAS_BOTTOM + (Constants.UNITY_CANVAS_HEIGHT * 0.2f) };
 		AddChild(m_Instruction1);
 		AddChild(m_Title);
 
@@ -56,8 +56,8 @@ public class StateTitle : ExaState {
 				m_Game.start();
 			} else {
 				//Move
-				m_Title.y = Futile.screen.height * 0.75f;
-				m_Title.y += ((Futile.screen.height * 0.25f) + (m_Title.textRect.height / 2)) * (START_DURATION - m_StartTime) / START_DURATION;
+				m_Title.y = Constants.UNITY_CANVAS_BOTTOM + (Constants.UNITY_CANVAS_HEIGHT * 0.75f);
+				m_Title.y += ((Constants.UNITY_CANVAS_BOTTOM + (Constants.UNITY_CANVAS_HEIGHT * 0.25f)) + (m_Title.textRect.height / 2)) * (START_DURATION - m_StartTime) / START_DURATION;
 			}
 		}
 	}
