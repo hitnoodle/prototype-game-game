@@ -5,10 +5,11 @@ using UnityEngine;
 public class StateGame : ExaState {
 	public StateGame(): base(GAME) {
 		//Initialize
-		m_Score 		= 0;
-		m_Error			= 0;
-		m_Health		= HEALTH_MAX;
-		m_EnemyTimer	= 2.0f;
+		m_Score 				= 0;
+		m_Error					= 0;
+		m_Health				= HEALTH_MAX;
+		m_EnemyTimer			= 2.0f;
+		m_PlayerBulletBorder 	= Futile.screen.width - 25;
 	
 		//Create background
 		FSprite Background = new FSprite("rect") { 
@@ -87,6 +88,7 @@ public class StateGame : ExaState {
 
 		//Check input
 		processCoinCounter(touches);
+		checkTouchedObjects(touches);
 	}
 	
 	public void increaseScore(int amount) {
@@ -227,6 +229,37 @@ public class StateGame : ExaState {
 			m_CoinCounterTime = 0;
 		}
 	}
+
+	protected void checkTouchedObjects(FTouch[] touches) {
+		foreach(FTouch touch in touches) {
+			//Enemy
+			List<Enemy> deadEnemies = new List<Enemy>();
+			for (int i = 0; i < m_Enemies.GetChildCount(); i++) {
+				//Get enemy
+				Enemy enemy = m_Enemies.GetChildAt(i) as Enemy;
+				if (enemy != null && enemy.ShouldBeTouched() && enemy.IsTouched(touch.position)) {
+					deadEnemies.Add(enemy);
+					increaseScore(50);
+					break;
+				}
+					
+			}
+			foreach(Enemy enemy in deadEnemies) m_Enemies.RemoveChild(enemy);
+
+			//Player bullets
+			List<PlayerBullet> deadPlayerBullets = new List<PlayerBullet>();
+			for (int i = 0; i < m_PlayerBullets.GetChildCount(); i++) {
+				//Get player bullets
+				PlayerBullet bullet = m_PlayerBullets.GetChildAt(i) as PlayerBullet;
+				if (bullet != null && bullet.ShouldBeTouched() && bullet.IsTouched(touch.position)) {
+					deadPlayerBullets.Add(bullet);
+					break;
+				}
+					
+			}
+			foreach(PlayerBullet bullet in deadPlayerBullets) m_PlayerBullets.RemoveChild(bullet);
+		}
+	}
 	
 	protected void processEnemies() {
 		//Initialize
@@ -235,11 +268,14 @@ public class StateGame : ExaState {
 		//For each child in the container
 		for (int i = 0; i < m_Enemies.GetChildCount(); i++) {
 			//Get enemy
-			Drawable Enemy = m_Enemies.GetChildAt(i) as Drawable;
-			if (Enemy != null) {
+			Enemy enemy = m_Enemies.GetChildAt(i) as Enemy;
+			if (enemy != null) {
 				//Move
-				Enemy.x -= 5.0f;
-				if (Enemy.x + (Enemy.getWidth() / 2) < 0) Deads.Add(Enemy);
+				enemy.x -= 5.0f;
+				enemy.UpdateDuration(Time.deltaTime);
+
+				if (enemy.ShouldBeDead()) incrementError();
+				if (enemy.x + (enemy.getWidth() / 2) < 0) Deads.Add(enemy);
 			}
 		}
 		
@@ -277,8 +313,14 @@ public class StateGame : ExaState {
 			PlayerBullet Bullet = m_PlayerBullets.GetChildAt(i) as PlayerBullet;
 			if (Bullet != null) {
 				//Move
-				Bullet.x += 15.0f;
-				if (Bullet.x + (Bullet.getWidth() / 2) > Futile.screen.width) Deads.Add(Bullet);
+				Bullet.x += 8.0f;
+				Bullet.Update(Time.deltaTime);
+
+				if (Bullet.ShouldBeDead()) {
+					Deads.Add(Bullet);
+					incrementError();
+				}
+
 				if (enemy != null && !Bullet.ShouldBeTouched() && Bullet.doesCollide(enemy)) {
 					HittedEnemies.Add(enemy);
 					Bullet.EnableTouchChecking();
@@ -302,12 +344,13 @@ public class StateGame : ExaState {
 			float X 			= playerPos.x + 10.0f;
 			float Y				= playerPos.y;
 			PlayerBullet bullet = new PlayerBullet(X,Y);
-			
+			bullet.SetBorder(m_PlayerBulletBorder);
+
 			//Add
 			m_PlayerBullets.AddChild(bullet);
 
 			//Reset
-			m_PlayerBulletTimer = 0.75f;
+			m_PlayerBulletTimer = 1.0f;
 		}
 	}
 
@@ -318,6 +361,7 @@ public class StateGame : ExaState {
 	protected float m_CoinCounterTime;
 	protected float m_EnemyTimer;
 	protected float m_PlayerBulletTimer;
+	protected float m_PlayerBulletBorder;
 	
 	//Components
 	protected Exa			m_Exa;
