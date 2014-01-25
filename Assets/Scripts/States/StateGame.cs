@@ -7,11 +7,12 @@ public class StateGame : ExaState {
 		//Initialize
 		m_Score 				= 0;
 		m_Error					= 0;
+		m_EnemyTimer			= 2.0f;
 		m_Health				= HEALTH_MAX;
 		m_ScoreCounterTimers	= new List<float>();
 		m_HealthCounterTimers	= new List<float>();
 		m_HealthChanges			= new List<float>();
-		m_EnemyTimer			= 2.0f;
+		m_Started				= false;
 	
 		//Create background
 		FSprite Background = new FSprite("rect") { 
@@ -41,9 +42,9 @@ public class StateGame : ExaState {
 		AddChild(m_PlayerBullets);
 		
 		//Create interface
-		m_ScoreCounter 		= new FLabel("font", "");
-		m_ErrorCounter 		= new FLabel("font", "");
-		m_HealthCounter 	= new FLabel("font", "");
+		m_ScoreCounter 		= new FLabel("font", "") { isVisible = false };
+		m_ErrorCounter 		= new FLabel("font", "") { isVisible = false };
+		m_HealthCounter 	= new FLabel("font", "") { isVisible = false };
 		m_ScoreOverlay 		= new FSprite("rect") {
 			x = 0, 
 			y = 0, 
@@ -72,33 +73,47 @@ public class StateGame : ExaState {
 		increaseScore(0);
 		changeHealth();
 	}
+	
+	public void start() {
+		//Started
+		m_Started = true;
+		
+		//Show interface
+		m_ErrorCounter.isVisible = true;
+		m_ScoreCounter.isVisible = true;
+		m_HealthCounter.isVisible = true;
+	}
 
 	public override void onUpdate(FTouch[] touches) {
-		//Update
-		m_Exa.update();
-		processEnemies();
-		
-		//For each enemy
-		Drawable Enemy = null;
-		for (int i = 0; i < m_Enemies.GetChildCount() && Enemy == null; i++) {
-			//Get enemy
-			Enemy = m_Enemies.GetChildAt(i) as Drawable;
-			if (Enemy != null && Enemy.x < m_Exa.x) Enemy = null;
+		//If not started
+		if (!m_Started) StateManager.instance.goTo(TITLE, new object[] { this }, false);
+		else {
+			//Update
+			m_Exa.update();
+			processEnemies();
+			
+			//For each enemy
+			Drawable Enemy = null;
+			for (int i = 0; i < m_Enemies.GetChildCount() && Enemy == null; i++) {
+				//Get enemy
+				Enemy = m_Enemies.GetChildAt(i) as Drawable;
+				if (Enemy != null && Enemy.x < m_Exa.x) Enemy = null;
+			}
+			
+			//IF closest enemy exist
+			if (Enemy != null) {
+				//Move player
+				if (Enemy.y < m_Exa.y - 8) 		m_Exa.y -= 8;
+				else if (Enemy.y > m_Exa.y + 8) m_Exa.y += 8;
+				else 							m_Exa.y = Enemy.y;
+			}
+	
+			Enemy e = (Enemy)Enemy;
+			processPlayerBullets(e);
+	
+			//Check input
+			processCoinCounter(touches);		
 		}
-		
-		//IF closest enemy exist
-		if (Enemy != null) {
-			//Move player
-			if (Enemy.y < m_Exa.y - 8) 		m_Exa.y -= 8;
-			else if (Enemy.y > m_Exa.y + 8) m_Exa.y += 8;
-			else 							m_Exa.y = Enemy.y;
-		}
-
-		Enemy e = (Enemy)Enemy;
-		processPlayerBullets(e);
-
-		//Check input
-		processCoinCounter(touches);
 	}
 	
 	protected void addScoreChange(float duration) {
@@ -392,6 +407,7 @@ public class StateGame : ExaState {
 	//Data
 	protected int 			m_Score;
 	protected int			m_Error;
+	protected bool			m_Started;
 	protected List<float> 	m_HealthChanges;
 	protected List<float> 	m_ScoreCounterTimers;
 	protected List<float> 	m_HealthCounterTimers;
