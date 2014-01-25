@@ -27,6 +27,9 @@ public class StateResult : ExaState {
 			//Setup game
 			if (m_Game != null) m_Game.setup();
 			m_Active = false;
+			
+			//SFX
+			FSoundManager.PlaySound("success");
 		}
 	}
 

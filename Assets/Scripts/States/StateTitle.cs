@@ -20,7 +20,7 @@ public class StateTitle : ExaState {
 		AddChild(Credit1);*/
 
 		//Play music
-		//FSoundManager.PlayMusic("bgm", 0.3f);
+		FSoundManager.PlayMusic("bgm", 0.3f);
 	}
 
 	public override void onUpdate(FTouch[] touches) {
@@ -38,7 +38,7 @@ public class StateTitle : ExaState {
 					//If released
 					if (touches[i].phase == TouchPhase.Ended) {
 						//SFX
-						//FSoundManager.PlaySound("cursor");
+						FSoundManager.PlaySound("success");
 
 						//Start
 						m_StartTime = START_DURATION;

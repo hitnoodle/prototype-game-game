@@ -86,7 +86,7 @@ public class StateGame : ExaState {
 		
 		//Prepare interface
 		m_Error--;
-		incrementError();
+		incrementError(false);
 		increaseScore(0);
 		changeHealth();
 	}
@@ -179,15 +179,23 @@ public class StateGame : ExaState {
 		m_HealthOverlay.y 		= m_HealthCounter.y;
 	}
 	
-	protected void incrementError() {
+	protected void incrementError() { incrementError(true); }
+	protected void incrementError(bool sfx) {
 		//Increase
 		m_Error++;
-		if (m_Error >= 10) m_Gameover = true;
+		if (m_Error >= 10) {
+			//Gameover
+			m_Gameover = true;
+			FSoundManager.PlaySound("gameover");
+		}
 		
 		//Refresh
 		m_ErrorCounter.text 	= "Error: " + m_Error;
 		m_ErrorCounter.x 		= 12 + (m_ErrorCounter.textRect.width * 0.5f);
 		m_ErrorCounter.y 		= 4 + (m_ErrorCounter.textRect.height * 0.5f);
+		
+		//SFX
+		if (sfx && !m_Gameover) FSoundManager.PlaySound("error");
 	}
 
 	/*protected void processCoins(float offset) {
@@ -286,7 +294,7 @@ public class StateGame : ExaState {
 			if (m_ScoreCounterTimers[Index] > 0) Index++;
 			else {
 				//Remove
-				if (!m_ScoreOverlay.isVisible) incrementError();
+				if (m_ScoreOverlay.isVisible) incrementError();
 				m_ScoreCounterTimers.RemoveAt(Index);
 			}
 		}
@@ -309,7 +317,11 @@ public class StateGame : ExaState {
 			}
 			
 			//If touched
-			if (Touched) increaseScore(500);
+			if (Touched) {
+				//Do stuff
+				increaseScore(500);
+				FSoundManager.PlaySound("success");
+			}
 		}
 	}
 	
@@ -322,7 +334,7 @@ public class StateGame : ExaState {
 			if (m_HealthCounterTimers[Index] > 0) Index++;
 			else {
 				//Remove
-				if (!m_HealthOverlay.isVisible) incrementError();
+				if (m_HealthOverlay.isVisible) incrementError();
 				m_HealthCounterTimers.RemoveAt(Index);
 				m_HealthChanges.RemoveAt(Index);
 			}
@@ -346,7 +358,11 @@ public class StateGame : ExaState {
 			}
 			
 			//If touched
-			if (Touched) changeHealth();
+			if (Touched) {
+				//Change stuff
+				changeHealth();
+				FSoundManager.PlaySound("success");
+			}
 		}
 	}
 
@@ -361,6 +377,9 @@ public class StateGame : ExaState {
 				if (enemy != null && enemy.ShouldBeTouched() && enemy.IsTouched(touch.position)) {
 					deadEnemies.Add(enemy);
 					deadTimerIndex.Add(m_EnemyShootTimer[i]);
+		
+					//SFX
+					FSoundManager.PlaySound("success");
 
 					addScoreChange(2);
 					break;
@@ -377,6 +396,9 @@ public class StateGame : ExaState {
 				PlayerBullet bullet = m_PlayerBullets.GetChildAt(i) as PlayerBullet;
 				if (bullet != null && bullet.ShouldBeTouched() && bullet.IsTouched(touch.position)) {
 					deadPlayerBullets.Add(bullet);
+		
+					//SFX
+					FSoundManager.PlaySound("success");
 					break;
 				}
 					
@@ -462,7 +484,8 @@ public class StateGame : ExaState {
 				if (enemy != null && !Bullet.ShouldBeTouched() && Bullet.doesCollide(enemy)) {
 					HittedEnemies.Add(enemy);
 					Bullet.EnableTouchChecking();
-				}			
+					FSoundManager.PlaySound("explosion");
+				}
 			}
 		}
 		
