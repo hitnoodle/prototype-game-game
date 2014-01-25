@@ -1,7 +1,7 @@
 using UnityEngine;
 
 public class EnemyBullet : Collidable {
-	public EnemyBullet(float xPosition, float yPosition) : base("knife",0,0,0,0) {
+	public EnemyBullet(float xPosition, float yPosition) : base("knife", null, 0,0,0,0) {
 		//Set position
 		x = xPosition;
 		y = yPosition;

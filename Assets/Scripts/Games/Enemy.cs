@@ -1,12 +1,16 @@
 using UnityEngine;
 
 public class Enemy : Collidable {
-	public Enemy(float xPosition, float yPosition) : base("enemy",0,0,0,0) {
+	public Enemy(float xPosition, float yPosition) : base(null, "enemy",0,0,0,0) {
 		//Set position
 		x = xPosition;
 		y = yPosition;
 		m_Overlay = new FSprite("target") { isVisible = false };
 		AddChild(m_Overlay);
+		
+		//Create animation
+		m_Animated.addAnimation(new FAnimation(DEFAULT_ANIMATION, new int[] { 1, 2 }, 180, true));
+		m_Animated.play(DEFAULT_ANIMATION);
 	}
 
 	public bool IsTouched(Vector2 pos) {
@@ -48,5 +52,6 @@ public class Enemy : Collidable {
 	protected FSprite	m_Overlay;
 	protected float 	m_ShootTimer;
 
-	protected const float OVERLAY_DURATION 	= 0.75f;
+	protected const float OVERLAY_DURATION 		= 0.75f;
+	protected const string DEFAULT_ANIMATION	= "default";
 }

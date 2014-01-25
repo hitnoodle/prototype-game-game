@@ -13,8 +13,8 @@ public class StateGame : ExaState {
 	
 		//Create backgrounds
 		m_Background11 		= new FSprite("clouds") { x = Constants.UNITY_CENTER_X, y = Constants.UNITY_CENTER_Y };
-		m_Background12 		= new FSprite("clouds") { x = Constants.UNITY_CANVAS_RIGHT + (Constants.UNITY_CANVAS_WIDTH / 2f), y = Constants.UNITY_CENTER_Y };
-		m_Background22 		= new FSprite("hills") 	{ x = Constants.UNITY_CANVAS_RIGHT + (Constants.UNITY_CANVAS_WIDTH / 2f) };
+		m_Background12 		= new FSprite("clouds") { x = Constants.UNITY_CANVAS_RIGHT + (Constants.UNITY_CANVAS_WIDTH / 2f) - 1, y = Constants.UNITY_CENTER_Y };
+		m_Background22 		= new FSprite("hills") 	{ x = Constants.UNITY_CANVAS_RIGHT + (Constants.UNITY_CANVAS_WIDTH / 2f) - 1 };
 		m_Background21 		= new FSprite("hills") 	{ x = Constants.UNITY_CENTER_X };
 		m_Background21.y	= Constants.UNITY_CANVAS_BOTTOM + m_Background21.textureRect.height * 0.5f;
 		m_Background22.y	= Constants.UNITY_CANVAS_BOTTOM + m_Background22.textureRect.height * 0.5f;
@@ -86,8 +86,8 @@ public class StateGame : ExaState {
 		
 		//Reset background
 		m_Background11.x = Constants.UNITY_CENTER_X;
-		m_Background12.x = Constants.UNITY_CANVAS_RIGHT + (Constants.UNITY_CANVAS_WIDTH / 2f);
-		m_Background22.x = Constants.UNITY_CANVAS_RIGHT + (Constants.UNITY_CANVAS_WIDTH / 2f);
+		m_Background12.x = Constants.UNITY_CANVAS_RIGHT + (Constants.UNITY_CANVAS_WIDTH / 2f) - 1;
+		m_Background22.x = Constants.UNITY_CANVAS_RIGHT + (Constants.UNITY_CANVAS_WIDTH / 2f) - 1;
 		m_Background21.x = Constants.UNITY_CENTER_X;
 		
 		//Prepare interface
@@ -283,11 +283,11 @@ public class StateGame : ExaState {
 		//Loop
 		if (m_Background11.x <= Constants.UNITY_CANVAS_LEFT - (Constants.UNITY_CANVAS_WIDTH / 2f)) {
 			m_Background11.x += Constants.UNITY_CANVAS_WIDTH;
-			m_Background12.x += Constants.UNITY_CANVAS_WIDTH;
+			m_Background12.x += Constants.UNITY_CANVAS_WIDTH - 1;
 		}
 		if (m_Background21.x <= Constants.UNITY_CANVAS_LEFT - (Constants.UNITY_CANVAS_WIDTH / 2f)) {
 			m_Background21.x += Constants.UNITY_CANVAS_WIDTH;
-			m_Background22.x += Constants.UNITY_CANVAS_WIDTH;
+			m_Background22.x += Constants.UNITY_CANVAS_WIDTH - 1;
 		}
 	}
 	
@@ -537,6 +537,9 @@ public class StateGame : ExaState {
 				if (Bullet.doesCollide(m_Exa)) {
 					addHealthChange(-10, 2);
 					Deads.Add(Bullet);
+					
+					//SFX
+					FSoundManager.PlaySound("damage");
 				}
 
 				//Remove if out of screen
