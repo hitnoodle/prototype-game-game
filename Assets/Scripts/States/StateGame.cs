@@ -28,12 +28,14 @@ public class StateGame : ExaState {
 		AddChild(Base);
 		
 		//Create components
-		m_Exa 		= new Exa();
-		m_Coins		= new FContainer();
-		m_Enemies	= new FContainer();
+		m_Exa 			= new Exa();
+		m_Coins			= new FContainer();
+		m_Enemies		= new FContainer();
+		m_PlayerBullets	= new FContainer();
 		AddChild(m_Enemies);
 		//AddChild(m_Coins);
 		AddChild(m_Exa);
+		AddChild(m_PlayerBullets);
 
 		//Create coins
 		processCoins(0);
@@ -82,9 +84,11 @@ public class StateGame : ExaState {
 		if (Enemy != null) {
 			//Move player
 			if (Enemy.y < m_Exa.y - 8) 		m_Exa.y -= 8;
-			else if (Enemy.y > m_Exa.y + 8) 	m_Exa.y += 8;
-			else 								m_Exa.y = Enemy.y;
+			else if (Enemy.y > m_Exa.y + 8) m_Exa.y += 8;
+			else 							m_Exa.y = Enemy.y;
 		}
+
+		processPlayerBullets(Enemy);
 		
 		//Check input
 		checkTouchedCoins(touches);
@@ -236,23 +240,57 @@ public class StateGame : ExaState {
 		}
 		
 		//Remove dead coins
-		for (int i = 0; i < Deads.Count; i++) m_Coins.RemoveChild(Deads[i]);
+		for (int i = 0; i < Deads.Count; i++) m_Enemies.RemoveChild(Deads[i]);
 		
 		//Spawn
 		m_EnemyTimer -= Time.deltaTime;
 		if (m_EnemyTimer <= 0f) {
 			//Create
-			Drawable Enemy	= new Drawable("exa-walk");
-			Enemy.x 		= Futile.screen.width + (Enemy.getWidth() / 2.0f);
-			Enemy.y			= Futile.screen.height / 12.0f * (float)(Random.Range(3, 10));
-			Enemy.setColor(1, 0, 0, 1);
+			float X 	= Futile.screen.width + 61.0f; //Hardcode width / 2
+			float Y		= Futile.screen.height / 12.0f * (float)(Random.Range(3, 10));
+			Enemy enemy = new Enemy(X,Y);
 			
 			//Add
-			m_Enemies.AddChild(Enemy);
+			m_Enemies.AddChild(enemy);
 			
 			//Reset
 			m_EnemyTimer = Random.Range(1, 5);
 			if (m_EnemyTimer > 1) m_EnemyTimer -= 1;
+		}
+	}
+
+	protected void processPlayerBullets(Drawable enemy) {
+		//Initialize
+		List<FNode> Deads = new List<FNode>();
+		
+		//For each child in the container
+		for (int i = 0; i < m_PlayerBullets.GetChildCount(); i++) {
+			//Get enemy
+			Drawable Bullet = m_PlayerBullets.GetChildAt(i) as Drawable;
+			if (Bullet != null) {
+				//Move
+				Bullet.x += 10.0f;
+				if (Bullet.x + (Bullet.getWidth() / 2) > Futile.screen.width) Deads.Add(Bullet);
+			}
+		}
+		
+		//Remove dead coins
+		for (int i = 0; i < Deads.Count; i++) m_PlayerBullets.RemoveChild(Deads[i]);
+		
+		//Spawn
+		m_PlayerBulletTimer -= Time.deltaTime;
+		if (m_PlayerBulletTimer <= 0f && enemy != null && enemy.y == m_Exa.y) {
+			//Create
+			Vector2 playerPos 	= m_Exa.GetPosition();
+			float X 			= playerPos.x + 10.0f;
+			float Y				= playerPos.y;
+			PlayerBullet bullet = new PlayerBullet(X,Y);
+			
+			//Add
+			m_PlayerBullets.AddChild(bullet);
+			
+			//Reset
+			m_PlayerBulletTimer = 1.0f;
 		}
 	}
 
@@ -263,11 +301,13 @@ public class StateGame : ExaState {
 	protected float m_CurrentCoinTime;
 	protected float m_CoinCounterTime;
 	protected float m_EnemyTimer;
+	protected float m_PlayerBulletTimer;
 	
 	//Components
 	protected Exa			m_Exa;
 	protected FContainer	m_Coins;
 	protected FContainer	m_Enemies;
+	protected FContainer	m_PlayerBullets;
 	
 	//Interface
 	protected FLabel 	m_CoinCounter;
