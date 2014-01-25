@@ -5,7 +5,7 @@ using UnityEngine;
 public class StateGame : ExaState {
 	public StateGame(): base(GAME) {
 		//Initialize
-		m_Coin 			= 9;
+		m_Score 		= 0;
 		m_Error			= 0;
 		m_Health		= HEALTH_MAX;
 		m_EnemyTimer	= 2.0f;
@@ -30,41 +30,31 @@ public class StateGame : ExaState {
 		
 		//Create components
 		m_Exa 		= new Exa();
-		m_Coins		= new FContainer();
 		m_Enemies	= new FContainer();
 		AddChild(m_Enemies);
-		//AddChild(m_Coins);
 		AddChild(m_Exa);
-
-		//Create coins
-		processCoins(0);
-
-		//Timer for coin
-		m_SpawnCoinTime 	= 2.0f;
-		m_CurrentCoinTime 	= m_SpawnCoinTime;
 		
 		//Create interface
-		m_CoinCounter 		= new FLabel("font", "");
+		m_ScoreCounter 		= new FLabel("font", "");
 		m_ErrorCounter 		= new FLabel("font", "");
 		m_HealthCounter 	= new FLabel("font", "");
 		m_CounterOverlay 	= new FSprite("rect") {
 			x = 0, 
 			y = 0, 
-			width = m_CoinCounter.textRect.width, 
-			height = m_CoinCounter.textRect.height, 
+			width = m_ScoreCounter.textRect.width, 
+			height = m_ScoreCounter.textRect.height, 
 			color = new Color(255.0f, 255.0f, 255.0f, 0.35f) 
 		};
 		m_CounterOverlay.isVisible = false;
 		
 		//Prepare
-		m_Coin--;
 		m_Error--;
-		AddChild(m_CoinCounter);
+		AddChild(m_ScoreCounter);
 		AddChild(m_ErrorCounter);
 		AddChild(m_HealthCounter);
 		AddChild(m_CounterOverlay);
 		incrementError();
-		incrementCoin();
+		increaseScore(0);
 		changeHealth(0);
 	}
 
@@ -72,7 +62,6 @@ public class StateGame : ExaState {
 		//Update
 		m_Exa.update();
 		processEnemies();
-		processCoins(m_Exa.getOffset());
 		
 		//For each enemy
 		Drawable Enemy = null;
@@ -91,24 +80,23 @@ public class StateGame : ExaState {
 		}
 		
 		//Check input
-		checkTouchedCoins(touches);
 		processCoinCounter(touches);
 	}
 	
-	public void incrementCoin() {
+	public void increaseScore(int amount) {
 		//Add
-		m_Coin++;
+		m_Score += amount;
 		
 		//Refresh
-		m_CoinCounter.text 	= m_Coin + " Coins";
-		m_CoinCounter.x 	= Futile.screen.width - 12 - (m_CoinCounter.textRect.width * 0.5f);
-		m_CoinCounter.y 	= Futile.screen.height - 12 - (m_CoinCounter.textRect.height * 0.5f);
+		m_ScoreCounter.text = "Score: " + m_Score;
+		m_ScoreCounter.x 	= Futile.screen.width - 12 - (m_ScoreCounter.textRect.width * 0.5f);
+		m_ScoreCounter.y 	= Futile.screen.height - 12 - (m_ScoreCounter.textRect.height * 0.5f);
 		
 		//Refresh overlay
-		m_CounterOverlay.x 		= m_CoinCounter.x;
-		m_CounterOverlay.y 		= m_CoinCounter.y;
-		m_CounterOverlay.width	= m_CoinCounter.textRect.width;
-		m_CounterOverlay.height	= m_CoinCounter.textRect.height;
+		m_CounterOverlay.x 		= m_ScoreCounter.x;
+		m_CounterOverlay.y 		= m_ScoreCounter.y;
+		m_CounterOverlay.width	= m_ScoreCounter.textRect.width;
+		m_CounterOverlay.height	= m_ScoreCounter.textRect.height;
 	}
 	
 	public void changeHealth(float change) {
@@ -131,7 +119,7 @@ public class StateGame : ExaState {
 		m_ErrorCounter.y 		= 4 + (m_ErrorCounter.textRect.height * 0.5f);
 	}
 
-	protected void processCoins(float offset) {
+	/*protected void processCoins(float offset) {
 		//Initialize
 		List<FNode> Deads = new List<FNode>();
 		
@@ -198,7 +186,7 @@ public class StateGame : ExaState {
 		
 		//Remove dead coins
 		for (int i = 0; i < Deads.Count; i++) m_Coins.RemoveChild(Deads[i]);
-	}
+	}*/
 	
 	protected void processCoinCounter(FTouch[] touches) {
 		//If there's counter
@@ -217,9 +205,9 @@ public class StateGame : ExaState {
 				//Check position
 				float TouchX 		= touches[i].position.x;
 				float TouchY 		= touches[i].position.y;
-				float HalfWidth		= m_CoinCounter.textRect.width * 0.5f;
-				float HalfHeight 	= m_CoinCounter.textRect.height * 0.5f;
-				if (TouchX >= m_CoinCounter.x - HalfWidth && TouchX <= m_CoinCounter.x + HalfWidth && TouchY >= m_CoinCounter.y - HalfHeight && TouchY <= m_CoinCounter.y + HalfHeight) Touched = true;
+				float HalfWidth		= m_ScoreCounter.textRect.width * 0.5f;
+				float HalfHeight 	= m_ScoreCounter.textRect.height * 0.5f;
+				if (TouchX >= m_ScoreCounter.x - HalfWidth && TouchX <= m_ScoreCounter.x + HalfWidth && TouchY >= m_ScoreCounter.y - HalfHeight && TouchY <= m_ScoreCounter.y + HalfHeight) Touched = true;
 			}	
 		}
 		
@@ -229,7 +217,7 @@ public class StateGame : ExaState {
 			if (m_CoinCounterTime <= 0) incrementError();
 			
 			//Pressed
-			incrementCoin();
+			increaseScore(500);
 			m_CoinCounterTime = 0;
 		}
 	}
@@ -250,7 +238,7 @@ public class StateGame : ExaState {
 		}
 		
 		//Remove dead coins
-		for (int i = 0; i < Deads.Count; i++) m_Coins.RemoveChild(Deads[i]);
+		for (int i = 0; i < Deads.Count; i++) m_Enemies.RemoveChild(Deads[i]);
 		
 		//Spawn
 		m_EnemyTimer -= Time.deltaTime;
@@ -274,21 +262,18 @@ public class StateGame : ExaState {
 	protected const float HEALTH_MAX = 100;
 
 	//Data
-	protected int 	m_Coin;
+	protected int 	m_Score;
 	protected int	m_Error;
 	protected float m_Health;
-	protected float m_SpawnCoinTime;
-	protected float m_CurrentCoinTime;
 	protected float m_CoinCounterTime;
 	protected float m_EnemyTimer;
 	
 	//Components
 	protected Exa			m_Exa;
-	protected FContainer	m_Coins;
 	protected FContainer	m_Enemies;
 	
 	//Interface
-	protected FLabel 	m_CoinCounter;
+	protected FLabel 	m_ScoreCounter;
 	protected FLabel 	m_ErrorCounter;
 	protected FLabel 	m_HealthCounter;
 	protected FSprite	m_CounterOverlay;
