@@ -5,10 +5,13 @@ using UnityEngine;
 public class StateGame : ExaState {
 	public StateGame(): base(GAME) {
 		//Initialize
-		m_Score 		= 0;
-		m_Error			= 0;
-		m_Health		= HEALTH_MAX;
-		m_EnemyTimer	= 2.0f;
+		m_Score 				= 0;
+		m_Error					= 0;
+		m_Health				= HEALTH_MAX;
+		m_ScoreCounterTimers	= new List<float>();
+		m_HealthCounterTimers	= new List<float>();
+		m_HealthChanges			= new List<float>();
+		m_EnemyTimer			= 2.0f;
 	
 		//Create background
 		FSprite Background = new FSprite("rect") { 
@@ -38,24 +41,33 @@ public class StateGame : ExaState {
 		m_ScoreCounter 		= new FLabel("font", "");
 		m_ErrorCounter 		= new FLabel("font", "");
 		m_HealthCounter 	= new FLabel("font", "");
-		m_CounterOverlay 	= new FSprite("rect") {
+		m_ScoreOverlay 		= new FSprite("rect") {
 			x = 0, 
 			y = 0, 
 			width = m_ScoreCounter.textRect.width, 
 			height = m_ScoreCounter.textRect.height, 
-			color = new Color(255.0f, 255.0f, 255.0f, 0.35f) 
+			color = new Color(1.0f, 1.0f, 1.0f, 0.35f),
+			isVisible = false
 		};
-		m_CounterOverlay.isVisible = false;
+		m_HealthOverlay 	= new FSprite("rect") {
+			x = 0, 
+			y = 0, 
+			width = m_HealthCounter.textRect.width, 
+			height = m_HealthCounter.textRect.height, 
+			color = new Color(1.0f, 1.0f, 1.0f, 0.35f),
+			isVisible = false
+		};
 		
 		//Prepare
 		m_Error--;
 		AddChild(m_ScoreCounter);
+		AddChild(m_ScoreOverlay);
 		AddChild(m_ErrorCounter);
 		AddChild(m_HealthCounter);
-		AddChild(m_CounterOverlay);
+		AddChild(m_HealthOverlay);
 		incrementError();
 		increaseScore(0);
-		changeHealth(0);
+		changeHealth();
 	}
 
 	public override void onUpdate(FTouch[] touches) {
@@ -83,9 +95,25 @@ public class StateGame : ExaState {
 		processCoinCounter(touches);
 	}
 	
-	public void increaseScore(int amount) {
+	protected void addScoreChange(float duration) {
+		//Add
+		m_ScoreCounterTimers.Add(duration);
+		m_ScoreOverlay.isVisible = true;
+	}
+	
+	protected void addHealthChange(float change, float duration) {
+		//Add
+		m_HealthChanges.Add(change);
+		m_HealthCounterTimers.Add(duration);
+		
+		//Show
+		m_HealthOverlay.isVisible = true;
+	}
+	
+	protected void increaseScore(int amount) {
 		//Add
 		m_Score += amount;
+		if (m_ScoreCounterTimers.Count > 0) m_ScoreCounterTimers.RemoveAt(0);
 		
 		//Refresh
 		m_ScoreCounter.text = "Score: " + m_Score;
@@ -93,23 +121,34 @@ public class StateGame : ExaState {
 		m_ScoreCounter.y 	= Futile.screen.height - 12 - (m_ScoreCounter.textRect.height * 0.5f);
 		
 		//Refresh overlay
-		m_CounterOverlay.x 		= m_ScoreCounter.x;
-		m_CounterOverlay.y 		= m_ScoreCounter.y;
-		m_CounterOverlay.width	= m_ScoreCounter.textRect.width;
-		m_CounterOverlay.height	= m_ScoreCounter.textRect.height;
+		m_ScoreOverlay.x 		= m_ScoreCounter.x;
+		m_ScoreOverlay.y 		= m_ScoreCounter.y;
+		m_ScoreOverlay.width	= m_ScoreCounter.textRect.width;
+		m_ScoreOverlay.height	= m_ScoreCounter.textRect.height;
 	}
 	
-	public void changeHealth(float change) {
-		//Change
-		m_Health += change;
+	protected void changeHealth() {
+		//If there's change
+		if (m_HealthCounterTimers.Count > 0) m_HealthCounterTimers.RemoveAt(0);
+		if (m_HealthChanges.Count > 0) {
+			//Change health
+			m_Health += m_HealthChanges[0];
+			m_HealthChanges.RemoveAt(0);
+		}
 		
 		//Refresh
 		m_HealthCounter.text 	= "Health: " + (int)m_Health;
 		m_HealthCounter.x 		= 12 + (m_HealthCounter.textRect.width * 0.5f);
 		m_HealthCounter.y 		= Futile.screen.height - 12 - (m_HealthCounter.textRect.height * 0.5f);
+		
+		//Refresh overlay
+		m_HealthOverlay.x 		= m_HealthCounter.x;
+		m_HealthOverlay.y 		= m_HealthCounter.y;
+		m_HealthOverlay.width	= m_HealthCounter.textRect.width;
+		m_HealthOverlay.height	= m_HealthCounter.textRect.height;
 	}
 	
-	public void incrementError() {
+	protected void incrementError() {
 		//Increase
 		m_Error++;
 		
@@ -189,36 +228,38 @@ public class StateGame : ExaState {
 	}*/
 	
 	protected void processCoinCounter(FTouch[] touches) {
-		//If there's counter
-		if (m_CoinCounterTime > 0) {
+		//While not all timer
+		int Index = 0;
+		while (Index < m_ScoreCounterTimers.Count) {
 			//Manage time
-			m_CoinCounterTime -= Time.deltaTime;
-			if (m_CoinCounterTime <= 0 && !m_CounterOverlay.isVisible) incrementError();
-		}
-		m_CounterOverlay.isVisible = m_CoinCounterTime > 0;
-	
-		//For each touch
-		bool Touched = false;
-		for (int i = 0; i < touches.Length && !Touched; i++) {
-			//If done
-			if (touches[i].phase == TouchPhase.Ended) {
-				//Check position
-				float TouchX 		= touches[i].position.x;
-				float TouchY 		= touches[i].position.y;
-				float HalfWidth		= m_ScoreCounter.textRect.width * 0.5f;
-				float HalfHeight 	= m_ScoreCounter.textRect.height * 0.5f;
-				if (TouchX >= m_ScoreCounter.x - HalfWidth && TouchX <= m_ScoreCounter.x + HalfWidth && TouchY >= m_ScoreCounter.y - HalfHeight && TouchY <= m_ScoreCounter.y + HalfHeight) Touched = true;
-			}	
+			m_ScoreCounterTimers[Index] -= Time.deltaTime;
+			if (m_ScoreCounterTimers[Index] > 0) Index++;
+			else {
+				//Remove
+				if (!m_ScoreOverlay.isVisible) incrementError();
+				m_ScoreCounterTimers.RemoveAt(Index);
+			}
 		}
 		
-		//If touched
-		if (Touched) {
-			//Decrease health if not time
-			if (m_CoinCounterTime <= 0) incrementError();
+		//Check score overlay
+		m_ScoreOverlay.isVisible = m_ScoreCounterTimers.Count > 0;
+		if (m_ScoreOverlay.isVisible) {
+			//For each touch
+			bool Touched = false;
+			for (int i = 0; i < touches.Length && !Touched; i++) {
+				//If done
+				if (touches[i].phase == TouchPhase.Ended) {
+					//Check position
+					float TouchX 		= touches[i].position.x;
+					float TouchY 		= touches[i].position.y;
+					float HalfWidth		= m_ScoreCounter.textRect.width * 0.5f;
+					float HalfHeight 	= m_ScoreCounter.textRect.height * 0.5f;
+					if (TouchX >= m_ScoreCounter.x - HalfWidth && TouchX <= m_ScoreCounter.x + HalfWidth && TouchY >= m_ScoreCounter.y - HalfHeight && TouchY <= m_ScoreCounter.y + HalfHeight) Touched = true;
+				}	
+			}
 			
-			//Pressed
-			increaseScore(500);
-			m_CoinCounterTime = 0;
+			//If touched
+			if (Touched) increaseScore(500);
 		}
 	}
 	
@@ -262,11 +303,13 @@ public class StateGame : ExaState {
 	protected const float HEALTH_MAX = 100;
 
 	//Data
-	protected int 	m_Score;
-	protected int	m_Error;
-	protected float m_Health;
-	protected float m_CoinCounterTime;
-	protected float m_EnemyTimer;
+	protected int 			m_Score;
+	protected int			m_Error;
+	protected float 		m_Health;
+	protected float 		m_EnemyTimer;
+	protected List<float> 	m_HealthChanges;
+	protected List<float> 	m_ScoreCounterTimers;
+	protected List<float> 	m_HealthCounterTimers;
 	
 	//Components
 	protected Exa			m_Exa;
@@ -276,5 +319,6 @@ public class StateGame : ExaState {
 	protected FLabel 	m_ScoreCounter;
 	protected FLabel 	m_ErrorCounter;
 	protected FLabel 	m_HealthCounter;
-	protected FSprite	m_CounterOverlay;
+	protected FSprite	m_HealthOverlay;
+	protected FSprite	m_ScoreOverlay;
 }
