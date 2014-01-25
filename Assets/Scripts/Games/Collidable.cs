@@ -1,6 +1,6 @@
 
 public abstract class Collidable : Drawable {
-	protected Collidable(string name, float left, float top, float right, float bottom) : base(name) {
+	protected Collidable(string name, string animated, float left, float top, float right, float bottom) : base(name, animated) {
 		//Initialize
 		m_CollideTop	= 0;
 		m_CollideLeft	= 0;
@@ -8,7 +8,7 @@ public abstract class Collidable : Drawable {
 		m_CollideBottom	= 0;
 
 		//If sprite exist
-		if (m_Sprite != null) setSize(left, top, right, bottom);
+		if (m_Sprite != null || m_Animated != null) setSize(left, top, right, bottom);
 	}
 
 	protected void setSize(float left, float top, float right, float bottom) {

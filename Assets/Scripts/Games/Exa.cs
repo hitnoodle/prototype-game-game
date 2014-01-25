@@ -2,7 +2,7 @@
 using UnityEngine;
 
 public class Exa : Collidable {
-	public Exa() : base("chicken", 0, 0, 0, 0) {
+	public Exa() : base(null, "chicken", 0, 0, 0, 0) {
 		//Initialize
 		m_SpeedX 	= DEFAULT_SPEED_X;
 		m_SpeedY 	= DEFAULT_SPEED_Y;
@@ -14,6 +14,10 @@ public class Exa : Collidable {
 		//Set position
 		x = Constants.UNITY_CANVAS_LEFT + (Constants.UNITY_CANVAS_WIDTH * 0.2f);
 		y = (Constants.UNITY_CANVAS_BOTTOM + (Constants.UNITY_CANVAS_HEIGHT * 0.25f)) + (getHeight() * 0.5f);
+		
+		//Create animation
+		m_Animated.addAnimation(new FAnimation(DEFAULT_ANIMATION, new int[] { 1, 2, 3 }, 100, true));
+		m_Animated.play(DEFAULT_ANIMATION);
 	}
 	
 	public float getOffset() { return m_OffsetX; }
@@ -110,6 +114,7 @@ public class Exa : Collidable {
 	protected const float MINIMUM_SPEED_Y 			= -100;
 	protected const float DEFAULT_ACCELERATION_Y 	= -500;
 	protected const float DEFAULT_ACCELERATION_X 	= 0;
+	protected const string DEFAULT_ANIMATION		= "default";
 	
 	//Data
 	protected float m_AccelX;
