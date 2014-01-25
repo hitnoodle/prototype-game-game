@@ -269,6 +269,43 @@ public class StateGame : ExaState {
 		}
 	}
 	
+	protected void processHealthCounter(FTouch[] touches) {
+		//While not all timer
+		int Index = 0;
+		while (Index < m_HealthCounterTimers.Count) {
+			//Manage time
+			m_HealthCounterTimers[Index] -= Time.deltaTime;
+			if (m_HealthCounterTimers[Index] > 0) Index++;
+			else {
+				//Remove
+				if (!m_HealthOverlay.isVisible) incrementError();
+				m_HealthCounterTimers.RemoveAt(Index);
+				m_HealthChanges.RemoveAt(Index);
+			}
+		}
+		
+		//Check health overlay
+		m_HealthOverlay.isVisible = m_HealthCounterTimers.Count > 0;
+		if (m_HealthOverlay.isVisible) {
+			//For each touch
+			bool Touched = false;
+			for (int i = 0; i < touches.Length && !Touched; i++) {
+				//If done
+				if (touches[i].phase == TouchPhase.Ended) {
+					//Check position
+					float TouchX 		= touches[i].position.x;
+					float TouchY 		= touches[i].position.y;
+					float HalfWidth		= m_HealthCounter.textRect.width * 0.5f;
+					float HalfHeight 	= m_HealthCounter.textRect.height * 0.5f;
+					if (TouchX >= m_HealthCounter.x - HalfWidth && TouchX <= m_HealthCounter.x + HalfWidth && TouchY >= m_HealthCounter.y - HalfHeight && TouchY <= m_HealthCounter.y + HalfHeight) Touched = true;
+				}	
+			}
+			
+			//If touched
+			if (Touched) changeHealth();
+		}
+	}
+	
 	protected void processEnemies() {
 		//Initialize
 		List<FNode> Deads = new List<FNode>();
