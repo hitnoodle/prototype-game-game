@@ -6,7 +6,8 @@ public class StateGame : ExaState {
 	public StateGame(): base(GAME) {
 		//Initialize
 		m_Coin 			= 9;
-		m_Health		= 3;
+		m_Error			= 0;
+		m_Health		= HEALTH_MAX;
 		m_EnemyTimer	= 2.0f;
 	
 		//Create background
@@ -43,8 +44,9 @@ public class StateGame : ExaState {
 		m_CurrentCoinTime 	= m_SpawnCoinTime;
 		
 		//Create interface
-		m_HealthCounter 	= new FLabel("font", "");
 		m_CoinCounter 		= new FLabel("font", "");
+		m_ErrorCounter 		= new FLabel("font", "");
+		m_HealthCounter 	= new FLabel("font", "");
 		m_CounterOverlay 	= new FSprite("rect") {
 			x = 0, 
 			y = 0, 
@@ -56,12 +58,14 @@ public class StateGame : ExaState {
 		
 		//Prepare
 		m_Coin--;
-		m_Health++;
+		m_Error--;
 		AddChild(m_CoinCounter);
+		AddChild(m_ErrorCounter);
 		AddChild(m_HealthCounter);
 		AddChild(m_CounterOverlay);
-		decrementHealth();
+		incrementError();
 		incrementCoin();
+		changeHealth(0);
 	}
 
 	public override void onUpdate(FTouch[] touches) {
@@ -107,14 +111,24 @@ public class StateGame : ExaState {
 		m_CounterOverlay.height	= m_CoinCounter.textRect.height;
 	}
 	
-	public void decrementHealth() {
-		//Decrease
-		m_Health--;
+	public void changeHealth(float change) {
+		//Change
+		m_Health += change;
 		
 		//Refresh
-		m_HealthCounter.text 	= "Error: " + (3 - m_Health);
+		m_HealthCounter.text 	= "Health: " + (int)m_Health;
 		m_HealthCounter.x 		= 12 + (m_HealthCounter.textRect.width * 0.5f);
-		m_HealthCounter.y 		= 4 + (m_HealthCounter.textRect.height * 0.5f);
+		m_HealthCounter.y 		= Futile.screen.height - 12 - (m_HealthCounter.textRect.height * 0.5f);
+	}
+	
+	public void incrementError() {
+		//Increase
+		m_Error++;
+		
+		//Refresh
+		m_ErrorCounter.text 	= "Error: " + m_Error;
+		m_ErrorCounter.x 		= 12 + (m_ErrorCounter.textRect.width * 0.5f);
+		m_ErrorCounter.y 		= 4 + (m_ErrorCounter.textRect.height * 0.5f);
 	}
 
 	protected void processCoins(float offset) {
@@ -133,7 +147,7 @@ public class StateGame : ExaState {
 				float CoinRight	 = ACoin.x + (ACoin.getWidth() / 2);
 				if (CoinRight < 0) {
 					Deads.Add(ACoin);
-					decrementHealth();
+					incrementError();
 				}
 
 				//Update duration
@@ -174,7 +188,7 @@ public class StateGame : ExaState {
 				foreach(FTouch touch in touches) {
 					if (ACoin.IsTouched(touch.position)) {
 						Deads.Add(ACoin);
-						if (!ACoin.ShouldBeTouched()) decrementHealth();
+						if (!ACoin.ShouldBeTouched()) incrementError();
 
 						break;
 					}
@@ -191,7 +205,7 @@ public class StateGame : ExaState {
 		if (m_CoinCounterTime > 0) {
 			//Manage time
 			m_CoinCounterTime -= Time.deltaTime;
-			if (m_CoinCounterTime <= 0 && !m_CounterOverlay.isVisible) decrementHealth();
+			if (m_CoinCounterTime <= 0 && !m_CounterOverlay.isVisible) incrementError();
 		}
 		m_CounterOverlay.isVisible = m_CoinCounterTime > 0;
 	
@@ -212,7 +226,7 @@ public class StateGame : ExaState {
 		//If touched
 		if (Touched) {
 			//Decrease health if not time
-			if (m_CoinCounterTime <= 0) decrementHealth();
+			if (m_CoinCounterTime <= 0) incrementError();
 			
 			//Pressed
 			incrementCoin();
@@ -244,21 +258,25 @@ public class StateGame : ExaState {
 			//Create
 			Drawable Enemy	= new Drawable("exa-walk");
 			Enemy.x 		= Futile.screen.width + (Enemy.getWidth() / 2.0f);
-			Enemy.y			= Futile.screen.height / 12.0f * (float)(Random.Range(3, 10));
+			Enemy.y			= Futile.screen.height / 12.0f * (float)(Random.Range(2, 12));
 			Enemy.setColor(1, 0, 0, 1);
 			
 			//Add
 			m_Enemies.AddChild(Enemy);
 			
 			//Reset
-			m_EnemyTimer = Random.Range(1, 5);
+			m_EnemyTimer = Random.Range(1, 9) / 2.0f;
 			if (m_EnemyTimer > 1) m_EnemyTimer -= 1;
 		}
 	}
+	
+	//Constants
+	protected const float HEALTH_MAX = 100;
 
 	//Data
 	protected int 	m_Coin;
-	protected int 	m_Health;
+	protected int	m_Error;
+	protected float m_Health;
 	protected float m_SpawnCoinTime;
 	protected float m_CurrentCoinTime;
 	protected float m_CoinCounterTime;
@@ -271,6 +289,7 @@ public class StateGame : ExaState {
 	
 	//Interface
 	protected FLabel 	m_CoinCounter;
+	protected FLabel 	m_ErrorCounter;
 	protected FLabel 	m_HealthCounter;
 	protected FSprite	m_CounterOverlay;
 }
