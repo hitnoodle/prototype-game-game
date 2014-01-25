@@ -10,6 +10,9 @@ public class StateGame : ExaState {
 		m_HealthChanges			= new List<float>();
 		m_EnemyShootTimer		= new List<float>();
 		m_Started				= false;
+
+		m_ConsoleLog 			= new string[CONSOLE_MAX_LINE];
+		for(int i=0;i<CONSOLE_MAX_LINE;i++) m_ConsoleLog[i] = "";
 	
 		//Create backgrounds
 		m_Background11 		= new FSprite("clouds") { x = Constants.UNITY_CENTER_X, y = Constants.UNITY_CENTER_Y };
@@ -50,11 +53,15 @@ public class StateGame : ExaState {
 		AddChild(m_ScoreOverlay);
 		AddChild(m_HealthOverlay);
 
+
 		//Create unity canvas
-		m_Unity = new FSprite("unity") { x = Futile.screen.halfWidth, y = Futile.screen.halfHeight };
+		m_Unity 	= new FSprite("unity") { x = Futile.screen.halfWidth, y = Futile.screen.halfHeight };
+		m_Console 	= new FLabel[CONSOLE_MAX_LINE];
+		for(int i=0;i<CONSOLE_MAX_LINE;i++) m_Console[i] = new FLabel("font_console", "") { isVisible = false }; 
 
 		//Add
 		AddChild(m_Unity);
+		foreach(FLabel line in m_Console) AddChild(line);
 	}
 	
 	public void start() {
@@ -66,7 +73,8 @@ public class StateGame : ExaState {
 		m_HealthGauge.isVisible = true;
 		m_ErrorCounter.isVisible = true;
 		m_ScoreCounter.isVisible = true;
-		
+		for(int i=0;i<CONSOLE_MAX_LINE;i++) m_Console[i].isVisible = true;
+
 		//Start
 		setup();
 	}
@@ -98,6 +106,9 @@ public class StateGame : ExaState {
 		incrementError(false);
 		increaseScore(0);
 		changeHealth();
+
+		//Log
+		logConsole("[LOG] StateManager: StateGame initialized");
 	}
 
 	public override void onUpdate(FTouch[] touches) {
@@ -143,6 +154,9 @@ public class StateGame : ExaState {
 		//Add
 		m_ScoreCounterTimers.Add(duration);
 		m_ScoreOverlay.isVisible = true;
+
+		//Log
+		logConsole("[LOG] Engine: Game need to change score in " + duration + " Seconds");
 	}
 	
 	protected void addHealthChange(float change, float duration) {
@@ -152,6 +166,9 @@ public class StateGame : ExaState {
 
 		//Show
 		m_HealthOverlay.isVisible = true;
+
+		//Log
+		logConsole("[LOG] Engine: Game need to change health in " + duration + " Seconds");
 	}
 	
 	protected void increaseScore(int amount) {
@@ -195,10 +212,13 @@ public class StateGame : ExaState {
 	protected void incrementError(bool sfx) {
 		//Increase
 		m_Error++;
-		if (m_Error >= 10) {
+		if (m_Error >= ERROR_MAX) {
 			//Gameover
 			m_Gameover = true;
 			FSoundManager.PlaySound("gameover");
+
+			//Log
+			logConsole("[Error] Engine: Too many errors. Game crashed");
 		}
 		
 		//Refresh
@@ -208,6 +228,22 @@ public class StateGame : ExaState {
 		
 		//SFX
 		if (sfx && !m_Gameover) FSoundManager.PlaySound("error");
+	}
+
+	protected void logConsole(string log) {
+		string first = m_ConsoleLog[0];
+		m_ConsoleLog[0] = log;
+		for(int i=1;i<CONSOLE_MAX_LINE;i++) {
+			string second = m_ConsoleLog[i];
+			m_ConsoleLog[i] = first;
+			first = second;
+		}
+
+		for(int i=0;i<CONSOLE_MAX_LINE;i++) {
+			m_Console[i].text 	= m_ConsoleLog[i];
+			m_Console[i].x 		= 65 + (m_Console[i].textRect.width * 0.5f);
+			m_Console[i].y 		= 67.5f - (CONSOLE_LINE_OFFSET * i) + (m_Console[i].textRect.height * 0.5f);
+		}
 	}
 
 	/*protected void processCoins(float offset) {
@@ -290,10 +326,18 @@ public class StateGame : ExaState {
 		if (m_Background11.x <= Constants.UNITY_CANVAS_LEFT - (Constants.UNITY_CANVAS_WIDTH / 2f)) {
 			m_Background11.x += Constants.UNITY_CANVAS_WIDTH;
 			m_Background12.x += Constants.UNITY_CANVAS_WIDTH - 1;
+			m_Background12.x += Constants.UNITY_CANVAS_WIDTH;
+
+			//Log
+			logConsole("[LOG] ParallaxBackground: Layer 1 is now looping");
 		}
 		if (m_Background21.x <= Constants.UNITY_CANVAS_LEFT - (Constants.UNITY_CANVAS_WIDTH / 2f)) {
 			m_Background21.x += Constants.UNITY_CANVAS_WIDTH;
 			m_Background22.x += Constants.UNITY_CANVAS_WIDTH - 1;
+			m_Background22.x += Constants.UNITY_CANVAS_WIDTH;
+
+			//Log
+			logConsole("[LOG] ParallaxBackground: Layer 2 is now looping");
 		}
 	}
 	
@@ -306,7 +350,12 @@ public class StateGame : ExaState {
 			if (m_ScoreCounterTimers[Index] > 0) Index++;
 			else {
 				//Remove
-				if (m_ScoreOverlay.isVisible) incrementError();
+				if (m_ScoreOverlay.isVisible) {
+					//Log
+					logConsole("[Error] UIHandler: NullException. Couldn't get score data " + (m_Error + 1) + "/" + ERROR_MAX);
+
+					incrementError();
+				}
 				m_ScoreCounterTimers.RemoveAt(Index);
 			}
 		}
@@ -333,6 +382,9 @@ public class StateGame : ExaState {
 				//Do stuff
 				increaseScore(500);
 				FSoundManager.PlaySound("success");
+
+				//Log
+				logConsole("[LOG] UIHandler: Score successfully increased");
 			}
 		}
 	}
@@ -346,7 +398,12 @@ public class StateGame : ExaState {
 			if (m_HealthCounterTimers[Index] > 0) Index++;
 			else {
 				//Remove
-				if (m_HealthOverlay.isVisible) incrementError();
+				if (m_HealthOverlay.isVisible) {
+					//Log
+					logConsole("[Error] UIHandler: NullException. Couldn't get health data " + (m_Error + 1) + "/" + ERROR_MAX);
+
+					incrementError();
+				}
 				m_HealthCounterTimers.RemoveAt(Index);
 				m_HealthChanges.RemoveAt(Index);
 			}
@@ -374,6 +431,9 @@ public class StateGame : ExaState {
 				//Change stuff
 				changeHealth();
 				FSoundManager.PlaySound("success");
+
+				//Log
+				logConsole("[LOG] UIHandler: Health successfully decreased");
 			}
 		}
 	}
@@ -389,11 +449,14 @@ public class StateGame : ExaState {
 				if (enemy != null && enemy.ShouldBeTouched() && enemy.IsTouched(touch.position)) {
 					deadEnemies.Add(enemy);
 					deadTimerIndex.Add(m_EnemyShootTimer[i]);
-		
+					addScoreChange(2);
+
 					//SFX
 					FSoundManager.PlaySound("success");
 
-					addScoreChange(2);
+					//Log
+					logConsole("[LOG] GarbageCollector: Enemy is successfully deleted");
+
 					break;
 				}
 					
@@ -411,6 +474,10 @@ public class StateGame : ExaState {
 		
 					//SFX
 					FSoundManager.PlaySound("success");
+
+					//Log
+					logConsole("[LOG] GarbageCollector: PlayerBullet is successfully deleted");
+
 					break;
 				}
 					
@@ -441,13 +508,24 @@ public class StateGame : ExaState {
 					bullet.SetTarget(m_Exa.GetPosition());
 
 					m_EnemyBullets.AddChild(bullet);
+
+					//Log
+					logConsole("[LOG] Enemy: Shooting bullet");
 				}
 
-				if (enemy.ShouldBeDead()) incrementError();
+				if (enemy.ShouldBeDead()) {
+					//Log
+					logConsole("[Error] Memory Leak: Enemy not deleted " + (m_Error + 1) + "/" + ERROR_MAX);
+
+					incrementError();
+				}
 
 				if (enemy.x + (enemy.getWidth() / 2) < 0) {
 					Deads.Add(enemy);
 					deadTimerIndex.Add(m_EnemyShootTimer[i]);
+
+					//Log
+					logConsole("[LOG] Enemy: OutOfScreen");
 				}
 			}
 		}
@@ -471,6 +549,9 @@ public class StateGame : ExaState {
 			//Reset
 			m_EnemyTimer = Random.Range(2, 5);
 			if (m_EnemyTimer > 2) m_EnemyTimer -= 1;
+
+			//Log
+			logConsole("[LOG] Enemy: Spawned");
 		}
 	}
 
@@ -489,6 +570,9 @@ public class StateGame : ExaState {
 				Bullet.Update(Time.deltaTime);
 
 				if (Bullet.ShouldBeDead()) {
+					//Log
+					logConsole("[Error] Memory Leak: PlayerBullet not deleted " + (m_Error + 1) + "/" + ERROR_MAX);
+
 					Deads.Add(Bullet);
 					incrementError();
 				}
@@ -497,6 +581,9 @@ public class StateGame : ExaState {
 					HittedEnemies.Add(enemy);
 					Bullet.EnableTouchChecking();
 					FSoundManager.PlaySound("explosion");
+
+					//Log
+					logConsole("[LOG] Engine: Bullet - Enemy collision detected!");
 				}
 			}
 		}
@@ -524,6 +611,9 @@ public class StateGame : ExaState {
 
 			//Reset
 			m_PlayerBulletTimer = 1.5f;
+
+			//Log
+			logConsole("[LOG] Player: Shooting bullet");
 		}
 	}
 
@@ -546,10 +636,18 @@ public class StateGame : ExaState {
 					
 					//SFX
 					FSoundManager.PlaySound("damage");
+
+					//Log
+					logConsole("[LOG] Engine: Player - Bullet collision automatically handled");
 				}
 
 				//Remove if out of screen
-				if (Bullet.IsOutOfScreen()) Deads.Add(Bullet);
+				if (Bullet.IsOutOfScreen()) {
+					Deads.Add(Bullet);
+
+					//Log
+					logConsole("[LOG] EnemyBullet: OutOfScreen");
+				}
 			}
 		}
 		
@@ -571,6 +669,7 @@ public class StateGame : ExaState {
 	protected List<float> 	m_ScoreCounterTimers;
 	protected List<float> 	m_HealthCounterTimers;
 	protected List<float>	m_EnemyShootTimer;
+	protected string[] 		m_ConsoleLog;
 	
 	//Components
 	protected Exa			m_Exa;
@@ -590,10 +689,14 @@ public class StateGame : ExaState {
 	protected FLabel 	m_ErrorCounter;
 	protected FSprite	m_HealthOverlay;
 	protected FSprite	m_ScoreOverlay;
+	protected FLabel[]	m_Console;
 
 	//Constants
-	protected const float HEALTH_MAX = 100;
-	protected const float ENEMY_SPEED = 3.0f;
-	protected const float ENEMY_FIRST_SHOOT_INTERVAL = 0f;
-	protected const float ENEMY_SHOOT_INTERVAL = 2.0f;
+	protected const float 	HEALTH_MAX 					= 100;
+	protected const float 	ENEMY_SPEED 				= 3.0f;
+	protected const float 	ENEMY_FIRST_SHOOT_INTERVAL 	= 0f;
+	protected const float 	ENEMY_SHOOT_INTERVAL 		= 2.0f;
+	protected const int 	CONSOLE_MAX_LINE 			= 4;
+	protected const float 	CONSOLE_LINE_OFFSET			= 27.5f;
+	protected const int		ERROR_MAX					= 10;
 }
