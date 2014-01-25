@@ -17,7 +17,9 @@ public class Main : MonoBehaviour {
 		Futile.instance.Init(Params);
 		Futile.atlasManager.LoadAtlas("Atlases/atlas");
 		Futile.atlasManager.LoadAtlas("Atlases/atlas-pixel");
+		Futile.atlasManager.LoadImage("Atlases/font_console");
 		Futile.atlasManager.LoadFont("font", "font", "Atlases/font", 0, 0);
+		Futile.atlasManager.LoadFont("font_console", "Atlases/font_console", "Atlases/font_console", 0, 0);
 		//Futile.atlasManager.LoadFont("visitor", "visitor" + Futile.resourceSuffix, "Atlases/visitor" + Futile.resourceSuffix, 0, 0);
 		//Futile.atlasManager.LoadFont("visitor-big", "visitor-big" + Futile.resourceSuffix, "Atlases/visitor-big" + Futile.resourceSuffix, 0, 0);
 		//Futile.atlasManager.LoadFont("visitor-small", "visitor-small" + Futile.resourceSuffix, "Atlases/visitor-small" + Futile.resourceSuffix, 0, 0);
