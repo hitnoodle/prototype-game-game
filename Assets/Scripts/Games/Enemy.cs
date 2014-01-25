@@ -3,8 +3,8 @@ using UnityEngine;
 public class Enemy : Collidable {
 	public Enemy(float xPosition, float yPosition) : base("exa-walk",0,0,0,0) {
 		//Set position
-		x = xPosition;
-		y = yPosition;
+		x 				= xPosition;
+		y 				= yPosition;
 
 		//Set attributes
 		setColor(1, 0, 0, 1);
@@ -56,6 +56,7 @@ public class Enemy : Collidable {
 	protected bool 		m_Activated;
 	protected bool 		m_Dead;
 	protected FSprite	m_Overlay;
-	
-	protected const float OVERLAY_DURATION = 0.75f;
+	protected float 	m_ShootTimer;
+
+	protected const float OVERLAY_DURATION 	= 0.75f;
 }

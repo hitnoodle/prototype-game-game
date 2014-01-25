@@ -10,13 +10,10 @@ public class StateGame : ExaState {
 		m_Health				= HEALTH_MAX;
 		m_EnemyTimer			= 2.0f;
 		m_PlayerBulletBorder 	= Futile.screen.width - 25;
-		m_Score 				= 0;
-		m_Error					= 0;
-		m_EnemyTimer			= 2.0f;
-		m_Health				= HEALTH_MAX;
 		m_ScoreCounterTimers	= new List<float>();
 		m_HealthCounterTimers	= new List<float>();
 		m_HealthChanges			= new List<float>();
+		m_EnemyShootTimer		= new List<float>();
 		m_Started				= false;
 	
 		//Create background
@@ -41,10 +38,12 @@ public class StateGame : ExaState {
 		m_Exa 			= new Exa();
 		m_Enemies		= new FContainer();
 		m_PlayerBullets	= new FContainer();
+		m_EnemyBullets	= new FContainer();
 
 		AddChild(m_Enemies);
 		AddChild(m_Exa);
 		AddChild(m_PlayerBullets);
+		AddChild(m_EnemyBullets);
 		
 		//Create interface
 		m_ScoreCounter 		= new FLabel("font", "") { isVisible = false };
@@ -113,11 +112,15 @@ public class StateGame : ExaState {
 				else 							m_Exa.y = Enemy.y;
 			}
 	
+
+			//Process bullets
 			Enemy e = (Enemy)Enemy;
 			processPlayerBullets(e);
+			processEnemyBullets();
 	
 			//Check input
 			processCoinCounter(touches);
+			processHealthCounter(touches);
 			checkTouchedObjects(touches);
 		}
 	}
@@ -330,19 +333,22 @@ public class StateGame : ExaState {
 	protected void checkTouchedObjects(FTouch[] touches) {
 		foreach(FTouch touch in touches) {
 			//Enemy
-			List<Enemy> deadEnemies = new List<Enemy>();
+			List<Enemy> deadEnemies 	= new List<Enemy>();
+			List<float> deadTimerIndex 	= new List<float>();
 			for (int i = 0; i < m_Enemies.GetChildCount(); i++) {
 				//Get enemy
 				Enemy enemy = m_Enemies.GetChildAt(i) as Enemy;
 				if (enemy != null && enemy.ShouldBeTouched() && enemy.IsTouched(touch.position)) {
 					deadEnemies.Add(enemy);
+					deadTimerIndex.Add(m_EnemyShootTimer[i]);
+
 					addScoreChange(2);
-					//increaseScore(50);
 					break;
 				}
 					
 			}
 			foreach(Enemy enemy in deadEnemies) m_Enemies.RemoveChild(enemy);
+			foreach(float f in deadTimerIndex) 	m_EnemyShootTimer.Remove(f);
 
 			//Player bullets
 			List<PlayerBullet> deadPlayerBullets = new List<PlayerBullet>();
@@ -361,24 +367,40 @@ public class StateGame : ExaState {
 	
 	protected void processEnemies() {
 		//Initialize
-		List<FNode> Deads = new List<FNode>();
-		
+		List<FNode> Deads 			= new List<FNode>();
+		List<float> deadTimerIndex 	= new List<float>();
+
 		//For each child in the container
 		for (int i = 0; i < m_Enemies.GetChildCount(); i++) {
 			//Get enemy
 			Enemy enemy = m_Enemies.GetChildAt(i) as Enemy;
 			if (enemy != null) {
 				//Move
-				enemy.x -= 5.0f;
+				enemy.x -= ENEMY_SPEED;
+
 				enemy.UpdateDuration(Time.deltaTime);
+				m_EnemyShootTimer[i] -= Time.deltaTime;
+				if (m_EnemyShootTimer[i] <= 0) {
+					m_EnemyShootTimer[i] = ENEMY_SHOOT_INTERVAL;
+
+					EnemyBullet bullet = new EnemyBullet(enemy.GetPosition().x - 10, enemy.GetPosition().y);
+					bullet.SetTarget(m_Exa.GetPosition());
+
+					m_EnemyBullets.AddChild(bullet);
+				}
 
 				if (enemy.ShouldBeDead()) incrementError();
-				if (enemy.x + (enemy.getWidth() / 2) < 0) Deads.Add(enemy);
+
+				if (enemy.x + (enemy.getWidth() / 2) < 0) {
+					Deads.Add(enemy);
+					deadTimerIndex.Add(m_EnemyShootTimer[i]);
+				}
 			}
 		}
 		
 		//Remove dead coins
-		for (int i = 0; i < Deads.Count; i++) m_Enemies.RemoveChild(Deads[i]);
+		for (int i = 0; i < Deads.Count; i++) 	m_Enemies.RemoveChild(Deads[i]);
+		foreach(float f in deadTimerIndex) 		m_EnemyShootTimer.Remove(f);
 		
 		//Spawn
 		m_EnemyTimer -= Time.deltaTime;
@@ -390,15 +412,13 @@ public class StateGame : ExaState {
 			
 			//Add
 			m_Enemies.AddChild(enemy);
+			m_EnemyShootTimer.Add(ENEMY_FIRST_SHOOT_INTERVAL);
 			
 			//Reset
 			m_EnemyTimer = Random.Range(1, 9) / 2.0f;
 			if (m_EnemyTimer > 1) m_EnemyTimer -= 1;
 		}
 	}
-	
-	//Constants
-	protected const float HEALTH_MAX = 100;
 
 	protected void processPlayerBullets(Enemy enemy) {
 		//Initialize
@@ -452,6 +472,34 @@ public class StateGame : ExaState {
 		}
 	}
 
+	protected void processEnemyBullets() {
+		//Initialize
+		List<FNode> Deads = new List<FNode>();
+		
+		//For each child in the container
+		for (int i = 0; i < m_EnemyBullets.GetChildCount(); i++) {
+			//Get enemy
+			EnemyBullet Bullet = m_EnemyBullets.GetChildAt(i) as EnemyBullet;
+			if (Bullet != null) {
+				//Move
+				Bullet.Update(Time.deltaTime);	
+
+				//Check collision
+				if (Bullet.doesCollide(m_Exa)) {
+					addHealthChange(-10, 2);
+					Deads.Add(Bullet);
+				}
+
+				//Remove if out of screen
+				if (Bullet.IsOutOfScreen()) 
+					Deads.Add(Bullet);
+			}
+		}
+		
+		//Remove deads
+		for (int i = 0; i < Deads.Count; i++) m_EnemyBullets.RemoveChild(Deads[i]);
+	}
+
 	//Data
 	protected int 			m_Score;
 	protected int			m_Error;
@@ -464,11 +512,13 @@ public class StateGame : ExaState {
 	protected List<float> 	m_HealthChanges;
 	protected List<float> 	m_ScoreCounterTimers;
 	protected List<float> 	m_HealthCounterTimers;
+	protected List<float>	m_EnemyShootTimer;
 	
 	//Components
 	protected Exa			m_Exa;
 	protected FContainer	m_Enemies;
 	protected FContainer	m_PlayerBullets;
+	protected FContainer	m_EnemyBullets;
 	
 	//Interface
 	protected FLabel 	m_ScoreCounter;
@@ -476,4 +526,10 @@ public class StateGame : ExaState {
 	protected FLabel 	m_HealthCounter;
 	protected FSprite	m_HealthOverlay;
 	protected FSprite	m_ScoreOverlay;
+
+	//Constants
+	protected const float HEALTH_MAX = 100;
+	protected const float ENEMY_SPEED = 3.0f;
+	protected const float ENEMY_FIRST_SHOOT_INTERVAL = 0f;
+	protected const float ENEMY_SHOOT_INTERVAL = 2.0f;
 }
