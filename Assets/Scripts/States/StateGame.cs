@@ -81,12 +81,13 @@ public class StateGame : ExaState {
 	
 	public void setup() {
 		//Initialize
-		m_Score 			= 0;
-		m_Error				= 0;
-		m_Health			= HEALTH_MAX;
-		m_Gameover			= false;
-		m_EnemyTimer		= 2.0f;
-		m_PlayerBulletTimer	= 0;
+		m_Score 				= 0;
+		m_Error					= 0;
+		m_Health				= HEALTH_MAX;
+		m_Gameover				= false;
+		m_EnemyTimer			= 2.0f;
+		m_PlayerBulletTimer		= 0;
+		m_PlayerBulletBorder 	= Futile.screen.width - 25;
 		m_Enemies.RemoveAllChildren();
 		m_PlayerBullets.RemoveAllChildren();
 		m_HealthCounterTimers.Clear();
@@ -129,7 +130,8 @@ public class StateGame : ExaState {
 			processPlayerBullets(e);
 	
 			//Check input
-			processCoinCounter(touches);		
+			processCoinCounter(touches);
+			checkTouchedObjects(touches);
 		}
 	}
 	
@@ -143,7 +145,7 @@ public class StateGame : ExaState {
 		//Add
 		m_HealthChanges.Add(change);
 		m_HealthCounterTimers.Add(duration);
-		
+
 		//Show
 		m_HealthOverlay.isVisible = true;
 	}
@@ -338,6 +340,38 @@ public class StateGame : ExaState {
 			if (Touched) changeHealth();
 		}
 	}
+
+	protected void checkTouchedObjects(FTouch[] touches) {
+		foreach(FTouch touch in touches) {
+			//Enemy
+			List<Enemy> deadEnemies = new List<Enemy>();
+			for (int i = 0; i < m_Enemies.GetChildCount(); i++) {
+				//Get enemy
+				Enemy enemy = m_Enemies.GetChildAt(i) as Enemy;
+				if (enemy != null && enemy.ShouldBeTouched() && enemy.IsTouched(touch.position)) {
+					deadEnemies.Add(enemy);
+					addScoreChange(2);
+					//increaseScore(50);
+					break;
+				}
+					
+			}
+			foreach(Enemy enemy in deadEnemies) m_Enemies.RemoveChild(enemy);
+
+			//Player bullets
+			List<PlayerBullet> deadPlayerBullets = new List<PlayerBullet>();
+			for (int i = 0; i < m_PlayerBullets.GetChildCount(); i++) {
+				//Get player bullets
+				PlayerBullet bullet = m_PlayerBullets.GetChildAt(i) as PlayerBullet;
+				if (bullet != null && bullet.ShouldBeTouched() && bullet.IsTouched(touch.position)) {
+					deadPlayerBullets.Add(bullet);
+					break;
+				}
+					
+			}
+			foreach(PlayerBullet bullet in deadPlayerBullets) m_PlayerBullets.RemoveChild(bullet);
+		}
+	}
 	
 	protected void processEnemies() {
 		//Initialize
@@ -346,11 +380,14 @@ public class StateGame : ExaState {
 		//For each child in the container
 		for (int i = 0; i < m_Enemies.GetChildCount(); i++) {
 			//Get enemy
-			Drawable Enemy = m_Enemies.GetChildAt(i) as Drawable;
-			if (Enemy != null) {
+			Enemy enemy = m_Enemies.GetChildAt(i) as Enemy;
+			if (enemy != null) {
 				//Move
-				Enemy.x -= 5.0f;
-				if (Enemy.x + (Enemy.getWidth() / 2) < 0) Deads.Add(Enemy);
+				enemy.x -= 5.0f;
+				enemy.UpdateDuration(Time.deltaTime);
+
+				if (enemy.ShouldBeDead()) incrementError();
+				if (enemy.x + (enemy.getWidth() / 2) < 0) Deads.Add(enemy);
 			}
 		}
 		
@@ -364,7 +401,6 @@ public class StateGame : ExaState {
 			float X 	= Futile.screen.width + 61.0f; //Hardcode width / 2
 			float Y		= Futile.screen.height / 12.0f * (float)(Random.Range(3, 10));
 			Enemy enemy = new Enemy(X,Y);
-			incrementError();
 			
 			//Add
 			m_Enemies.AddChild(enemy);
@@ -389,8 +425,14 @@ public class StateGame : ExaState {
 			PlayerBullet Bullet = m_PlayerBullets.GetChildAt(i) as PlayerBullet;
 			if (Bullet != null) {
 				//Move
-				Bullet.x += 15.0f;
-				if (Bullet.x + (Bullet.getWidth() / 2) > Futile.screen.width) Deads.Add(Bullet);
+				Bullet.x += 8.0f;
+				Bullet.Update(Time.deltaTime);
+
+				if (Bullet.ShouldBeDead()) {
+					Deads.Add(Bullet);
+					incrementError();
+				}
+
 				if (enemy != null && !Bullet.ShouldBeTouched() && Bullet.doesCollide(enemy)) {
 					HittedEnemies.Add(enemy);
 					Bullet.EnableTouchChecking();
@@ -414,26 +456,29 @@ public class StateGame : ExaState {
 			float X 			= playerPos.x + 10.0f;
 			float Y				= playerPos.y;
 			PlayerBullet bullet = new PlayerBullet(X,Y);
-			
+			bullet.SetBorder(m_PlayerBulletBorder);
+
 			//Add
 			m_PlayerBullets.AddChild(bullet);
 
 			//Reset
-			m_PlayerBulletTimer = 0.75f;
+			m_PlayerBulletTimer = 1.0f;
 		}
 	}
 
 	//Data
 	protected int 			m_Score;
 	protected int			m_Error;
+	protected float 		m_Health;
+	protected float 		m_CoinCounterTime;
+	protected float 		m_EnemyTimer;
+	protected float 		m_PlayerBulletTimer;
+	protected float 		m_PlayerBulletBorder;
 	protected bool			m_Started;
 	protected bool			m_Gameover;
 	protected List<float> 	m_HealthChanges;
 	protected List<float> 	m_ScoreCounterTimers;
 	protected List<float> 	m_HealthCounterTimers;
-	protected float 		m_PlayerBulletTimer;
-	protected float 		m_EnemyTimer;
-	protected float 		m_Health;
 	
 	//Components
 	protected Exa			m_Exa;
