@@ -1,22 +1,12 @@
 using UnityEngine;
 
 public class Enemy : Collidable {
-	public Enemy(float xPosition, float yPosition) : base("exa-walk",0,0,0,0) {
+	public Enemy(float xPosition, float yPosition) : base("enemy",0,0,0,0) {
 		//Set position
-		x 				= xPosition;
-		y 				= yPosition;
-
-		//Set attributes
-		setColor(1, 0, 0, 1);
-
-		m_Overlay = new FSprite("rect") {
-			x = 0, 
-			y = 0, 
-			width = m_Width, 
-			height = m_Height, 
-			color = new Color(255.0f, 255.0f, 255.0f, 0.35f) };
+		x = xPosition;
+		y = yPosition;
+		m_Overlay = new FSprite("target") { isVisible = false };
 		AddChild(m_Overlay);
-		m_Overlay.isVisible = false;
 	}
 
 	public bool IsTouched(Vector2 pos) {

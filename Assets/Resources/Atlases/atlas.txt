@@ -1,36 +1,108 @@
 {"frames": {
 
-"exa-jump.png":
+"bullet.png":
 {
-	"frame": {"x":162,"y":1,"w":124,"h":97},
+	"frame": {"x":1965,"y":1,"w":54,"h":54},
 	"rotated": false,
-	"trimmed": true,
-	"spriteSourceSize": {"x":0,"y":2,"w":124,"h":97},
-	"sourceSize": {"w":126,"h":99}
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":54,"h":54},
+	"sourceSize": {"w":54,"h":54}
 },
-"exa-walk.png":
+"button-pause-hover.png":
 {
-	"frame": {"x":287,"y":1,"w":122,"h":99},
+	"frame": {"x":1864,"y":1,"w":100,"h":100},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":100,"h":100},
+	"sourceSize": {"w":100,"h":100}
+},
+"button-pause.png":
+{
+	"frame": {"x":1763,"y":1,"w":100,"h":100},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":100,"h":100},
+	"sourceSize": {"w":100,"h":100}
+},
+"chicken.png":
+{
+	"frame": {"x":1377,"y":1,"w":272,"h":192},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":272,"h":192},
+	"sourceSize": {"w":272,"h":192}
+},
+"clouds.png":
+{
+	"frame": {"x":1,"y":1,"w":1024,"h":768},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":1024,"h":768},
+	"sourceSize": {"w":1024,"h":768}
+},
+"cross.png":
+{
+	"frame": {"x":1763,"y":102,"w":92,"h":94},
 	"rotated": false,
 	"trimmed": true,
-	"spriteSourceSize": {"x":4,"y":0,"w":122,"h":99},
-	"sourceSize": {"w":126,"h":99}
+	"spriteSourceSize": {"x":0,"y":0,"w":92,"h":94},
+	"sourceSize": {"w":94,"h":94}
+},
+"enemy.png":
+{
+	"frame": {"x":1187,"y":112,"w":148,"h":212},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":148,"h":212},
+	"sourceSize": {"w":148,"h":212}
 },
 "font.png":
 {
-	"frame": {"x":1,"y":1,"w":160,"h":508},
+	"frame": {"x":1026,"y":112,"w":160,"h":508},
 	"rotated": false,
 	"trimmed": true,
 	"spriteSourceSize": {"x":2,"y":2,"w":160,"h":508},
 	"sourceSize": {"w":256,"h":512}
+},
+"gauge.png":
+{
+	"frame": {"x":1026,"y":1,"w":350,"h":110},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":350,"h":110},
+	"sourceSize": {"w":350,"h":110}
+},
+"hills.png":
+{
+	"frame": {"x":1,"y":770,"w":1024,"h":260},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":1024,"h":260},
+	"sourceSize": {"w":1024,"h":260}
+},
+"knife.png":
+{
+	"frame": {"x":1965,"y":56,"w":53,"h":14},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":53,"h":14},
+	"sourceSize": {"w":53,"h":14}
+},
+"target.png":
+{
+	"frame": {"x":1650,"y":1,"w":112,"h":112},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":112,"h":112},
+	"sourceSize": {"w":112,"h":112}
 }},
 "meta": {
 	"app": "http://www.codeandweb.com/texturepacker ",
 	"version": "1.0",
 	"image": "atlas.png",
 	"format": "RGBA8888",
-	"size": {"w":512,"h":512},
+	"size": {"w":2048,"h":2048},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:479778d00335eb91f54088f82e003efe:db16ad5458d6aea437d71e93e83c34a7:b2cf441629818f6c24bd2ce3105f608b$"
+	"smartupdate": "$TexturePacker:SmartUpdate:738a376f4c1e4382ee7a9c11845863a4:0f48e6a5b7b9888667296c696adafb3c:b2cf441629818f6c24bd2ce3105f608b$"
 }
 }

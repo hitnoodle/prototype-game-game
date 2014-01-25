@@ -2,7 +2,7 @@
 using UnityEngine;
 
 public class Exa : Collidable {
-	public Exa() : base("exa-walk", 0, 0, 0, 0) {
+	public Exa() : base("chicken", 0, 0, 0, 0) {
 		//Initialize
 		m_SpeedX 	= DEFAULT_SPEED_X;
 		m_SpeedY 	= DEFAULT_SPEED_Y;

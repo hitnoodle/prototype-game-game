@@ -1,27 +1,12 @@
 using UnityEngine;
 
 public class PlayerBullet : Collidable {
-	public PlayerBullet(float xPosition, float yPosition) : base("exa-walk",0,0,0,0) {
+	public PlayerBullet(float xPosition, float yPosition) : base("bullet",0,0,0,0) {
 		//Set position
 		x = xPosition;
 		y = yPosition;
-
-		//Scale and set collision
-		SetScaleX(0.25f);
-		SetScaleY(0.25f);
-		setSize(0,0,0,0);
-
-		//Set attributes
-		setColor(0, 0, 1, 1);
-
-		m_Overlay = new FSprite("rect") {
-			x = 0, 
-			y = 0, 
-			width = m_Width * 2, 
-			height = m_Height * 2, 
-			color = new Color(255.0f, 255.0f, 255.0f, 0.35f) };
+		m_Overlay = new FSprite("target") { isVisible = false };
 		AddChild(m_Overlay);
-		m_Overlay.isVisible = false;
 	}
 
 	public void SetBorder(float border) {

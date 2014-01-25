@@ -11,23 +11,17 @@ public class StateGame : ExaState {
 		m_EnemyShootTimer		= new List<float>();
 		m_Started				= false;
 	
-		//Create background
-		FSprite Background = new FSprite("rect") { 
-			x = Futile.screen.halfWidth, 
-			y = Futile.screen.halfHeight, 
-			width = Futile.screen.width, 
-			height = Futile.screen.height, 
-			color = new Color(86.0f / 256.0f, 181.0f / 256.0f, 1.0f, 1.0f) };
-		AddChild(Background);
-		
-		//Create platform
-		FSprite Base = new FSprite("rect") { 
-			x = Futile.screen.halfWidth, 
-			y = Futile.screen.halfHeight * 0.25f, 
-			width = Futile.screen.width, 
-			height = Futile.screen.halfHeight * 0.5f, 
-			color = new Color(0.0f, 1.0f, 0.0f, 1.0f) };
-		AddChild(Base);
+		//Create backgrounds
+		m_Background11 		= new FSprite("clouds") { x = Futile.screen.halfWidth, y = Futile.screen.halfHeight };
+		m_Background12 		= new FSprite("clouds") { x = Futile.screen.width * 1.5f, y = Futile.screen.halfHeight };
+		m_Background22 		= new FSprite("hills") { x = Futile.screen.width * 1.5f };
+		m_Background21 		= new FSprite("hills") { x = Futile.screen.halfWidth };
+		m_Background21.y	= m_Background21.textureRect.height * 0.5f;
+		m_Background22.y	= m_Background22.textureRect.height * 0.5f;
+		AddChild(m_Background11);
+		AddChild(m_Background12);
+		AddChild(m_Background21);
+		AddChild(m_Background22);
 		
 		//Create components
 		m_Exa 			= new Exa();
@@ -44,22 +38,8 @@ public class StateGame : ExaState {
 		m_ScoreCounter 		= new FLabel("font", "") { isVisible = false };
 		m_ErrorCounter 		= new FLabel("font", "") { isVisible = false };
 		m_HealthCounter 	= new FLabel("font", "") { isVisible = false };
-		m_ScoreOverlay 		= new FSprite("rect") {
-			x = 0, 
-			y = 0, 
-			width = m_ScoreCounter.textRect.width, 
-			height = m_ScoreCounter.textRect.height, 
-			color = new Color(1.0f, 1.0f, 1.0f, 0.35f),
-			isVisible = false
-		};
-		m_HealthOverlay 	= new FSprite("rect") {
-			x = 0, 
-			y = 0, 
-			width = m_HealthCounter.textRect.width, 
-			height = m_HealthCounter.textRect.height, 
-			color = new Color(1.0f, 1.0f, 1.0f, 0.35f),
-			isVisible = false
-		};
+		m_ScoreOverlay 		= new FSprite("target") { isVisible = false };
+		m_HealthOverlay 	= new FSprite("target") { isVisible = false };
 		
 		//Add
 		AddChild(m_ScoreCounter);
@@ -91,11 +71,18 @@ public class StateGame : ExaState {
 		m_EnemyTimer			= 2.0f;
 		m_PlayerBulletTimer		= 0;
 		m_PlayerBulletBorder 	= Futile.screen.width - 25;
-		m_Enemies.RemoveAllChildren();
 		m_PlayerBullets.RemoveAllChildren();
+		m_EnemyBullets.RemoveAllChildren();
+		m_Enemies.RemoveAllChildren();
 		m_HealthCounterTimers.Clear();
 		m_ScoreCounterTimers.Clear();
 		m_HealthChanges.Clear();
+		
+		//Reset background
+		m_Background11.x = Futile.screen.halfWidth;
+		m_Background12.x = Futile.screen.width * 1.5f;
+		m_Background22.x = Futile.screen.width * 1.5f;
+		m_Background21.x = Futile.screen.halfWidth;
 		
 		//Prepare interface
 		m_Error--;
@@ -112,6 +99,7 @@ public class StateGame : ExaState {
 			//Update
 			m_Exa.update();
 			processEnemies();
+			processBackground();
 			
 			//For each enemy
 			Drawable Enemy = null;
@@ -170,8 +158,6 @@ public class StateGame : ExaState {
 		//Refresh overlay
 		m_ScoreOverlay.x 		= m_ScoreCounter.x;
 		m_ScoreOverlay.y 		= m_ScoreCounter.y;
-		m_ScoreOverlay.width	= m_ScoreCounter.textRect.width;
-		m_ScoreOverlay.height	= m_ScoreCounter.textRect.height;
 	}
 	
 	protected void changeHealth() {
@@ -191,14 +177,12 @@ public class StateGame : ExaState {
 		//Refresh overlay
 		m_HealthOverlay.x 		= m_HealthCounter.x;
 		m_HealthOverlay.y 		= m_HealthCounter.y;
-		m_HealthOverlay.width	= m_HealthCounter.textRect.width;
-		m_HealthOverlay.height	= m_HealthCounter.textRect.height;
 	}
 	
 	protected void incrementError() {
 		//Increase
 		m_Error++;
-		if (m_Error > 3) m_Gameover = true;
+		if (m_Error >= 10) m_Gameover = true;
 		
 		//Refresh
 		m_ErrorCounter.text 	= "Error: " + m_Error;
@@ -275,6 +259,24 @@ public class StateGame : ExaState {
 		for (int i = 0; i < Deads.Count; i++) m_Coins.RemoveChild(Deads[i]);
 	}*/
 	
+	protected void processBackground() {
+		//Move backgrounds
+		m_Background11.x -= m_Exa.getOffset() * 0.2f;
+		m_Background12.x -= m_Exa.getOffset() * 0.2f;
+		m_Background21.x -= m_Exa.getOffset() * 0.5f;
+		m_Background22.x -= m_Exa.getOffset() * 0.5f;
+		
+		//Loop
+		if (m_Background11.x <= -Futile.screen.halfWidth) {
+			m_Background11.x += Futile.screen.width;
+			m_Background12.x += Futile.screen.width;
+		}
+		if (m_Background21.x <= -Futile.screen.halfWidth) {
+			m_Background21.x += Futile.screen.width;
+			m_Background22.x += Futile.screen.width;
+		}
+	}
+	
 	protected void processCoinCounter(FTouch[] touches) {
 		//While not all timer
 		int Index = 0;
@@ -300,8 +302,8 @@ public class StateGame : ExaState {
 					//Check position
 					float TouchX 		= touches[i].position.x;
 					float TouchY 		= touches[i].position.y;
-					float HalfWidth		= m_ScoreCounter.textRect.width * 0.5f;
-					float HalfHeight 	= m_ScoreCounter.textRect.height * 0.5f;
+					float HalfWidth		= m_ScoreOverlay.textureRect.width * 0.5f;
+					float HalfHeight 	= m_ScoreOverlay.textureRect.height * 0.5f;
 					if (TouchX >= m_ScoreCounter.x - HalfWidth && TouchX <= m_ScoreCounter.x + HalfWidth && TouchY >= m_ScoreCounter.y - HalfHeight && TouchY <= m_ScoreCounter.y + HalfHeight) Touched = true;
 				}	
 			}
@@ -337,8 +339,8 @@ public class StateGame : ExaState {
 					//Check position
 					float TouchX 		= touches[i].position.x;
 					float TouchY 		= touches[i].position.y;
-					float HalfWidth		= m_HealthCounter.textRect.width * 0.5f;
-					float HalfHeight 	= m_HealthCounter.textRect.height * 0.5f;
+					float HalfWidth		= m_HealthOverlay.textureRect.width * 0.5f;
+					float HalfHeight 	= m_HealthOverlay.textureRect.height * 0.5f;
 					if (TouchX >= m_HealthCounter.x - HalfWidth && TouchX <= m_HealthCounter.x + HalfWidth && TouchY >= m_HealthCounter.y - HalfHeight && TouchY <= m_HealthCounter.y + HalfHeight) Touched = true;
 				}	
 			}
@@ -433,8 +435,8 @@ public class StateGame : ExaState {
 			m_EnemyShootTimer.Add(ENEMY_FIRST_SHOOT_INTERVAL);
 			
 			//Reset
-			m_EnemyTimer = Random.Range(1, 9) / 2.0f;
-			if (m_EnemyTimer > 1) m_EnemyTimer -= 1;
+			m_EnemyTimer = Random.Range(2, 5);
+			if (m_EnemyTimer > 2) m_EnemyTimer -= 1;
 		}
 	}
 
@@ -486,7 +488,7 @@ public class StateGame : ExaState {
 			m_PlayerBullets.AddChild(bullet);
 
 			//Reset
-			m_PlayerBulletTimer = 1.0f;
+			m_PlayerBulletTimer = 1.5f;
 		}
 	}
 
@@ -509,8 +511,7 @@ public class StateGame : ExaState {
 				}
 
 				//Remove if out of screen
-				if (Bullet.IsOutOfScreen()) 
-					Deads.Add(Bullet);
+				if (Bullet.IsOutOfScreen()) Deads.Add(Bullet);
 			}
 		}
 		
@@ -536,8 +537,12 @@ public class StateGame : ExaState {
 	//Components
 	protected Exa			m_Exa;
 	protected FContainer	m_Enemies;
-	protected FContainer	m_PlayerBullets;
 	protected FContainer	m_EnemyBullets;
+	protected FContainer	m_PlayerBullets;
+	protected FSprite		m_Background11;
+	protected FSprite		m_Background12;
+	protected FSprite		m_Background21;
+	protected FSprite		m_Background22;
 	
 	//Interface
 	protected FLabel 	m_ScoreCounter;

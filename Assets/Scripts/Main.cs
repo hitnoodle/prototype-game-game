@@ -11,7 +11,7 @@ public class Main : MonoBehaviour {
 		var Params = new FutileParams(true, true, false, false) { origin = new Vector2(0.0f, 0.0f) };
 		//Params.AddResolutionLevel(480.0f, 1.0f, 1.0f, "_x1"); //iPhone
 		//Params.AddResolutionLevel(960.0f, 2.0f, 2.0f, "_x2"); //iPhone Retina
-		Params.AddResolutionLevel(768.0f, 1.0f, 1.0f, ""); //i
+		Params.AddResolutionLevel(1024.0f, 1.0f, 1.0f, ""); //i
 		
 		//Initialize
 		Futile.instance.Init(Params);
