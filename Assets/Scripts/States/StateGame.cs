@@ -26,8 +26,8 @@ public class StateGame : ExaState {
 		//Create components
 		m_Exa 			= new Exa();
 		m_Enemies		= new FContainer();
-		m_PlayerBullets	= new FContainer();
 		m_EnemyBullets	= new FContainer();
+		m_PlayerBullets	= new FContainer();
 
 		AddChild(m_Enemies);
 		AddChild(m_Exa);
@@ -37,15 +37,17 @@ public class StateGame : ExaState {
 		//Create interface
 		m_ScoreCounter 		= new FLabel("font", "") { isVisible = false };
 		m_ErrorCounter 		= new FLabel("font", "") { isVisible = false };
-		m_HealthCounter 	= new FLabel("font", "") { isVisible = false };
 		m_ScoreOverlay 		= new FSprite("target") { isVisible = false };
 		m_HealthOverlay 	= new FSprite("target") { isVisible = false };
+		m_HealthGauge 		= new FSprite("gauge") { isVisible = false };
+		m_HealthBar 		= new FSprite("rect") { isVisible = false, color = new Color(0, 1, 0, 1) };
 		
 		//Add
+		AddChild(m_HealthBar);
+		AddChild(m_HealthGauge);
+		AddChild(m_ErrorCounter);
 		AddChild(m_ScoreCounter);
 		AddChild(m_ScoreOverlay);
-		AddChild(m_ErrorCounter);
-		AddChild(m_HealthCounter);
 		AddChild(m_HealthOverlay);
 
 		//Create unity canvas
@@ -60,9 +62,10 @@ public class StateGame : ExaState {
 		m_Started = true;
 		
 		//Show interface
+		m_HealthBar.isVisible = true;
+		m_HealthGauge.isVisible = true;
 		m_ErrorCounter.isVisible = true;
 		m_ScoreCounter.isVisible = true;
-		m_HealthCounter.isVisible = true;
 		
 		//Start
 		setup();
@@ -176,13 +179,16 @@ public class StateGame : ExaState {
 		}
 		
 		//Refresh
-		m_HealthCounter.text 	= "Health: " + (int)m_Health;
-		m_HealthCounter.x 		= Constants.UNITY_CANVAS_LEFT + 12 + (m_HealthCounter.textRect.width * 0.5f);
-		m_HealthCounter.y 		= Constants.UNITY_CANVAS_TOP - 12 - (m_HealthCounter.textRect.height * 0.5f);
+		m_HealthBar.height	= 34;
+		m_HealthBar.width	= m_Health / HEALTH_MAX * 264;
+		m_HealthGauge.x 	= Constants.UNITY_CANVAS_LEFT + 12 + (m_HealthGauge.textureRect.width * 0.5f);
+		m_HealthGauge.y 	= Constants.UNITY_CANVAS_TOP - 12 - (m_HealthGauge.textureRect.height * 0.5f);
+		m_HealthBar.x 		= Constants.UNITY_CANVAS_LEFT + 12 + 65 + (m_HealthBar.width * 0.5f);
+		m_HealthBar.y 		= Constants.UNITY_CANVAS_TOP - 12 - 31 - (m_HealthBar.height * 0.5f);
 		
 		//Refresh overlay
-		m_HealthOverlay.x 		= m_HealthCounter.x;
-		m_HealthOverlay.y 		= m_HealthCounter.y;
+		m_HealthOverlay.x = m_HealthBar.x + (m_HealthBar.width * 0.5f);
+		m_HealthOverlay.y = m_HealthBar.y;
 	}
 	
 	protected void incrementError() { incrementError(true); }
@@ -359,7 +365,7 @@ public class StateGame : ExaState {
 					float TouchY 		= touches[i].position.y;
 					float HalfWidth		= m_HealthOverlay.textureRect.width * 0.5f;
 					float HalfHeight 	= m_HealthOverlay.textureRect.height * 0.5f;
-					if (TouchX >= m_HealthCounter.x - HalfWidth && TouchX <= m_HealthCounter.x + HalfWidth && TouchY >= m_HealthCounter.y - HalfHeight && TouchY <= m_HealthCounter.y + HalfHeight) Touched = true;
+					if (TouchX >= m_HealthOverlay.x - HalfWidth && TouchX <= m_HealthOverlay.x + HalfWidth && TouchY >= m_HealthOverlay.y - HalfHeight && TouchY <= m_HealthOverlay.y + HalfHeight) Touched = true;
 				}	
 			}
 			
@@ -575,12 +581,13 @@ public class StateGame : ExaState {
 	protected FSprite		m_Background12;
 	protected FSprite		m_Background21;
 	protected FSprite		m_Background22;
+	protected FSprite		m_HealthGauge;
+	protected FSprite		m_HealthBar;
 	protected FSprite		m_Unity;
 	
 	//Interface
 	protected FLabel 	m_ScoreCounter;
 	protected FLabel 	m_ErrorCounter;
-	protected FLabel 	m_HealthCounter;
 	protected FSprite	m_HealthOverlay;
 	protected FSprite	m_ScoreOverlay;
 

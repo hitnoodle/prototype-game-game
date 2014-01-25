@@ -15,7 +15,7 @@ public class StateResult : ExaState {
 		AddChild(Title);
 
 		//Create buttons
-		m_ButtonRetry	= new FButton("button-pause", "button-pause", "button-pause-hover", "cursor") { x = Constants.UNITY_CENTER_X, y = Constants.UNITY_CANVAS_BOTTOM + (Constants.UNITY_CANVAS_HEIGHT * 0.25f)};
+		m_ButtonRetry	= new FButton("button", "button-hover", "button", "cursor") { x = Constants.UNITY_CENTER_X, y = Constants.UNITY_CANVAS_BOTTOM + (Constants.UNITY_CANVAS_HEIGHT * 0.25f)};
 		m_ButtonRetry.AddLabel("font", "Restart Game", Color.white);
 		m_ButtonRetry.SignalRelease += onPress;
 		AddChild(m_ButtonRetry);
