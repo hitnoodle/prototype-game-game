@@ -10,6 +10,14 @@ public class StateGame : ExaState {
 		m_Health				= HEALTH_MAX;
 		m_EnemyTimer			= 2.0f;
 		m_PlayerBulletBorder 	= Futile.screen.width - 25;
+		m_Score 				= 0;
+		m_Error					= 0;
+		m_EnemyTimer			= 2.0f;
+		m_Health				= HEALTH_MAX;
+		m_ScoreCounterTimers	= new List<float>();
+		m_HealthCounterTimers	= new List<float>();
+		m_HealthChanges			= new List<float>();
+		m_Started				= false;
 	
 		//Create background
 		FSprite Background = new FSprite("rect") { 
@@ -39,41 +47,90 @@ public class StateGame : ExaState {
 		AddChild(m_PlayerBullets);
 		
 		//Create interface
-		m_ScoreCounter 		= new FLabel("font", "");
-		m_ErrorCounter 		= new FLabel("font", "");
-		m_HealthCounter 	= new FLabel("font", "");
-		m_CounterOverlay 	= new FSprite("rect") {
+		m_ScoreCounter 		= new FLabel("font", "") { isVisible = false };
+		m_ErrorCounter 		= new FLabel("font", "") { isVisible = false };
+		m_HealthCounter 	= new FLabel("font", "") { isVisible = false };
+		m_ScoreOverlay 		= new FSprite("rect") {
 			x = 0, 
 			y = 0, 
 			width = m_ScoreCounter.textRect.width, 
 			height = m_ScoreCounter.textRect.height, 
-			color = new Color(255.0f, 255.0f, 255.0f, 0.35f) 
+			color = new Color(1.0f, 1.0f, 1.0f, 0.35f),
+			isVisible = false
 		};
-		m_CounterOverlay.isVisible = false;
+		m_HealthOverlay 	= new FSprite("rect") {
+			x = 0, 
+			y = 0, 
+			width = m_HealthCounter.textRect.width, 
+			height = m_HealthCounter.textRect.height, 
+			color = new Color(1.0f, 1.0f, 1.0f, 0.35f),
+			isVisible = false
+		};
 		
 		//Prepare
 		m_Error--;
 		AddChild(m_ScoreCounter);
+		AddChild(m_ScoreOverlay);
 		AddChild(m_ErrorCounter);
 		AddChild(m_HealthCounter);
-		AddChild(m_CounterOverlay);
+		AddChild(m_HealthOverlay);
 		incrementError();
 		increaseScore(0);
-		changeHealth(0);
+		changeHealth();
+	}
+	
+	public void start() {
+		//Started
+		m_Started = true;
+		
+		//Show interface
+		m_ErrorCounter.isVisible = true;
+		m_ScoreCounter.isVisible = true;
+		m_HealthCounter.isVisible = true;
 	}
 
 	public override void onUpdate(FTouch[] touches) {
-		//Update
-		m_Exa.update();
-		processEnemies();
-		
-		//For each enemy
-		Drawable Enemy = null;
-		for (int i = 0; i < m_Enemies.GetChildCount() && Enemy == null; i++) {
-			//Get enemy
-			Enemy = m_Enemies.GetChildAt(i) as Drawable;
-			if (Enemy != null && Enemy.x < m_Exa.x) Enemy = null;
+		//If not started
+		if (!m_Started) StateManager.instance.goTo(TITLE, new object[] { this }, false);
+		else {
+			//Update
+			m_Exa.update();
+			processEnemies();
+			
+			//For each enemy
+			Drawable Enemy = null;
+			for (int i = 0; i < m_Enemies.GetChildCount() && Enemy == null; i++) {
+				//Get enemy
+				Enemy = m_Enemies.GetChildAt(i) as Drawable;
+				if (Enemy != null && Enemy.x < m_Exa.x) Enemy = null;
+			}
+			
+			//IF closest enemy exist
+			if (Enemy != null) {
+				//Move player
+				if (Enemy.y < m_Exa.y - 8) 		m_Exa.y -= 8;
+				else if (Enemy.y > m_Exa.y + 8) m_Exa.y += 8;
+				else 							m_Exa.y = Enemy.y;
+			}
+	
+			Enemy e = (Enemy)Enemy;
+			processPlayerBullets(e);
+	
+			//Check input
+			processCoinCounter(touches);		
 		}
+	}
+	
+	protected void addScoreChange(float duration) {
+		//Add
+		m_ScoreCounterTimers.Add(duration);
+		m_ScoreOverlay.isVisible = true;
+	}
+	
+	protected void addHealthChange(float change, float duration) {
+		//Add
+		m_HealthChanges.Add(change);
+		m_HealthCounterTimers.Add(duration);
 		
 		//IF closest enemy exist
 		if (Enemy != null) {
@@ -89,11 +146,14 @@ public class StateGame : ExaState {
 		//Check input
 		processCoinCounter(touches);
 		checkTouchedObjects(touches);
+		//Show
+		m_HealthOverlay.isVisible = true;
 	}
 	
-	public void increaseScore(int amount) {
+	protected void increaseScore(int amount) {
 		//Add
 		m_Score += amount;
+		if (m_ScoreCounterTimers.Count > 0) m_ScoreCounterTimers.RemoveAt(0);
 		
 		//Refresh
 		m_ScoreCounter.text = "Score: " + m_Score;
@@ -101,23 +161,34 @@ public class StateGame : ExaState {
 		m_ScoreCounter.y 	= Futile.screen.height - 12 - (m_ScoreCounter.textRect.height * 0.5f);
 		
 		//Refresh overlay
-		m_CounterOverlay.x 		= m_ScoreCounter.x;
-		m_CounterOverlay.y 		= m_ScoreCounter.y;
-		m_CounterOverlay.width	= m_ScoreCounter.textRect.width;
-		m_CounterOverlay.height	= m_ScoreCounter.textRect.height;
+		m_ScoreOverlay.x 		= m_ScoreCounter.x;
+		m_ScoreOverlay.y 		= m_ScoreCounter.y;
+		m_ScoreOverlay.width	= m_ScoreCounter.textRect.width;
+		m_ScoreOverlay.height	= m_ScoreCounter.textRect.height;
 	}
 	
-	public void changeHealth(float change) {
-		//Change
-		m_Health += change;
+	protected void changeHealth() {
+		//If there's change
+		if (m_HealthCounterTimers.Count > 0) m_HealthCounterTimers.RemoveAt(0);
+		if (m_HealthChanges.Count > 0) {
+			//Change health
+			m_Health += m_HealthChanges[0];
+			m_HealthChanges.RemoveAt(0);
+		}
 		
 		//Refresh
 		m_HealthCounter.text 	= "Health: " + (int)m_Health;
 		m_HealthCounter.x 		= 12 + (m_HealthCounter.textRect.width * 0.5f);
 		m_HealthCounter.y 		= Futile.screen.height - 12 - (m_HealthCounter.textRect.height * 0.5f);
+		
+		//Refresh overlay
+		m_HealthOverlay.x 		= m_HealthCounter.x;
+		m_HealthOverlay.y 		= m_HealthCounter.y;
+		m_HealthOverlay.width	= m_HealthCounter.textRect.width;
+		m_HealthOverlay.height	= m_HealthCounter.textRect.height;
 	}
 	
-	public void incrementError() {
+	protected void incrementError() {
 		//Increase
 		m_Error++;
 		
@@ -197,36 +268,75 @@ public class StateGame : ExaState {
 	}*/
 	
 	protected void processCoinCounter(FTouch[] touches) {
-		//If there's counter
-		if (m_CoinCounterTime > 0) {
+		//While not all timer
+		int Index = 0;
+		while (Index < m_ScoreCounterTimers.Count) {
 			//Manage time
-			m_CoinCounterTime -= Time.deltaTime;
-			if (m_CoinCounterTime <= 0 && !m_CounterOverlay.isVisible) incrementError();
-		}
-		m_CounterOverlay.isVisible = m_CoinCounterTime > 0;
-	
-		//For each touch
-		bool Touched = false;
-		for (int i = 0; i < touches.Length && !Touched; i++) {
-			//If done
-			if (touches[i].phase == TouchPhase.Ended) {
-				//Check position
-				float TouchX 		= touches[i].position.x;
-				float TouchY 		= touches[i].position.y;
-				float HalfWidth		= m_ScoreCounter.textRect.width * 0.5f;
-				float HalfHeight 	= m_ScoreCounter.textRect.height * 0.5f;
-				if (TouchX >= m_ScoreCounter.x - HalfWidth && TouchX <= m_ScoreCounter.x + HalfWidth && TouchY >= m_ScoreCounter.y - HalfHeight && TouchY <= m_ScoreCounter.y + HalfHeight) Touched = true;
-			}	
+			m_ScoreCounterTimers[Index] -= Time.deltaTime;
+			if (m_ScoreCounterTimers[Index] > 0) Index++;
+			else {
+				//Remove
+				if (!m_ScoreOverlay.isVisible) incrementError();
+				m_ScoreCounterTimers.RemoveAt(Index);
+			}
 		}
 		
-		//If touched
-		if (Touched) {
-			//Decrease health if not time
-			if (m_CoinCounterTime <= 0) incrementError();
+		//Check score overlay
+		m_ScoreOverlay.isVisible = m_ScoreCounterTimers.Count > 0;
+		if (m_ScoreOverlay.isVisible) {
+			//For each touch
+			bool Touched = false;
+			for (int i = 0; i < touches.Length && !Touched; i++) {
+				//If done
+				if (touches[i].phase == TouchPhase.Ended) {
+					//Check position
+					float TouchX 		= touches[i].position.x;
+					float TouchY 		= touches[i].position.y;
+					float HalfWidth		= m_ScoreCounter.textRect.width * 0.5f;
+					float HalfHeight 	= m_ScoreCounter.textRect.height * 0.5f;
+					if (TouchX >= m_ScoreCounter.x - HalfWidth && TouchX <= m_ScoreCounter.x + HalfWidth && TouchY >= m_ScoreCounter.y - HalfHeight && TouchY <= m_ScoreCounter.y + HalfHeight) Touched = true;
+				}	
+			}
 			
-			//Pressed
-			increaseScore(500);
-			m_CoinCounterTime = 0;
+			//If touched
+			if (Touched) increaseScore(500);
+		}
+	}
+	
+	protected void processHealthCounter(FTouch[] touches) {
+		//While not all timer
+		int Index = 0;
+		while (Index < m_HealthCounterTimers.Count) {
+			//Manage time
+			m_HealthCounterTimers[Index] -= Time.deltaTime;
+			if (m_HealthCounterTimers[Index] > 0) Index++;
+			else {
+				//Remove
+				if (!m_HealthOverlay.isVisible) incrementError();
+				m_HealthCounterTimers.RemoveAt(Index);
+				m_HealthChanges.RemoveAt(Index);
+			}
+		}
+		
+		//Check health overlay
+		m_HealthOverlay.isVisible = m_HealthCounterTimers.Count > 0;
+		if (m_HealthOverlay.isVisible) {
+			//For each touch
+			bool Touched = false;
+			for (int i = 0; i < touches.Length && !Touched; i++) {
+				//If done
+				if (touches[i].phase == TouchPhase.Ended) {
+					//Check position
+					float TouchX 		= touches[i].position.x;
+					float TouchY 		= touches[i].position.y;
+					float HalfWidth		= m_HealthCounter.textRect.width * 0.5f;
+					float HalfHeight 	= m_HealthCounter.textRect.height * 0.5f;
+					if (TouchX >= m_HealthCounter.x - HalfWidth && TouchX <= m_HealthCounter.x + HalfWidth && TouchY >= m_HealthCounter.y - HalfHeight && TouchY <= m_HealthCounter.y + HalfHeight) Touched = true;
+				}	
+			}
+			
+			//If touched
+			if (Touched) changeHealth();
 		}
 	}
 
@@ -362,6 +472,15 @@ public class StateGame : ExaState {
 	protected float m_EnemyTimer;
 	protected float m_PlayerBulletTimer;
 	protected float m_PlayerBulletBorder;
+	protected int 			m_Score;
+	protected int			m_Error;
+	protected bool			m_Started;
+	protected List<float> 	m_HealthChanges;
+	protected List<float> 	m_ScoreCounterTimers;
+	protected List<float> 	m_HealthCounterTimers;
+	protected float 		m_PlayerBulletTimer;
+	protected float 		m_EnemyTimer;
+	protected float 		m_Health;
 	
 	//Components
 	protected Exa			m_Exa;
@@ -372,5 +491,6 @@ public class StateGame : ExaState {
 	protected FLabel 	m_ScoreCounter;
 	protected FLabel 	m_ErrorCounter;
 	protected FLabel 	m_HealthCounter;
-	protected FSprite	m_CounterOverlay;
+	protected FSprite	m_HealthOverlay;
+	protected FSprite	m_ScoreOverlay;
 }

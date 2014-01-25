@@ -7,17 +7,18 @@ public class StateFactory {
 
 		//Check ID
 		switch(id) {
-			case ExaState.TITLE:
+		case ExaState.TITLE:
+			if (parameters != null && parameters.Length >= 1) NewState = new StateTitle((StateGame)parameters[0]);
 			break;
 
-			case ExaState.GAME:
+		case ExaState.GAME:
 			NewState = new StateGame();
 			break;
 
-			case ExaState.PAUSE:
+		case ExaState.PAUSE:
 			break;
 
-			case ExaState.RESULT:
+		case ExaState.RESULT:
 			break;
 		}
 
