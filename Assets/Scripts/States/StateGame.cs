@@ -336,7 +336,8 @@ public class StateGame : ExaState {
 				Enemy enemy = m_Enemies.GetChildAt(i) as Enemy;
 				if (enemy != null && enemy.ShouldBeTouched() && enemy.IsTouched(touch.position)) {
 					deadEnemies.Add(enemy);
-					increaseScore(50);
+					addScoreChange(2);
+					//increaseScore(50);
 					break;
 				}
 					

@@ -17,8 +17,8 @@ public class PlayerBullet : Collidable {
 		m_Overlay = new FSprite("rect") {
 			x = 0, 
 			y = 0, 
-			width = m_Width, 
-			height = m_Height, 
+			width = m_Width * 2, 
+			height = m_Height * 2, 
 			color = new Color(255.0f, 255.0f, 255.0f, 0.35f) };
 		AddChild(m_Overlay);
 		m_Overlay.isVisible = false;
