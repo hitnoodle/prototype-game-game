@@ -117,7 +117,8 @@ public class StateGame : ExaState {
 			processPlayerBullets(e);
 	
 			//Check input
-			processCoinCounter(touches);		
+			processCoinCounter(touches);
+			checkTouchedObjects(touches);
 		}
 	}
 	
@@ -131,21 +132,7 @@ public class StateGame : ExaState {
 		//Add
 		m_HealthChanges.Add(change);
 		m_HealthCounterTimers.Add(duration);
-		
-		//IF closest enemy exist
-		if (Enemy != null) {
-			//Move player
-			if (Enemy.y < m_Exa.y - 8) 		m_Exa.y -= 8;
-			else if (Enemy.y > m_Exa.y + 8) m_Exa.y += 8;
-			else 							m_Exa.y = Enemy.y;
-		}
 
-		Enemy e = (Enemy)Enemy;
-		processPlayerBullets(e);
-
-		//Check input
-		processCoinCounter(touches);
-		checkTouchedObjects(touches);
 		//Show
 		m_HealthOverlay.isVisible = true;
 	}
@@ -465,22 +452,17 @@ public class StateGame : ExaState {
 	}
 
 	//Data
-	protected int 	m_Score;
-	protected int	m_Error;
-	protected float m_Health;
-	protected float m_CoinCounterTime;
-	protected float m_EnemyTimer;
-	protected float m_PlayerBulletTimer;
-	protected float m_PlayerBulletBorder;
 	protected int 			m_Score;
 	protected int			m_Error;
+	protected float 		m_Health;
+	protected float 		m_CoinCounterTime;
+	protected float 		m_EnemyTimer;
+	protected float 		m_PlayerBulletTimer;
+	protected float 		m_PlayerBulletBorder;
 	protected bool			m_Started;
 	protected List<float> 	m_HealthChanges;
 	protected List<float> 	m_ScoreCounterTimers;
 	protected List<float> 	m_HealthCounterTimers;
-	protected float 		m_PlayerBulletTimer;
-	protected float 		m_EnemyTimer;
-	protected float 		m_Health;
 	
 	//Components
 	protected Exa			m_Exa;
