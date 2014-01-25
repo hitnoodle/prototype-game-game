@@ -30,19 +30,12 @@ public class StateGame : ExaState {
 		
 		//Create components
 		m_Exa 			= new Exa();
-		m_Coins			= new FContainer();
 		m_Enemies		= new FContainer();
 		m_PlayerBullets	= new FContainer();
+
 		AddChild(m_Enemies);
 		AddChild(m_Exa);
 		AddChild(m_PlayerBullets);
-
-		//Create coins
-		processCoins(0);
-
-		//Timer for coin
-		m_SpawnCoinTime 	= 2.0f;
-		m_CurrentCoinTime 	= m_SpawnCoinTime;
 		
 		//Create interface
 		m_ScoreCounter 		= new FLabel("font", "");
@@ -89,8 +82,9 @@ public class StateGame : ExaState {
 			else 							m_Exa.y = Enemy.y;
 		}
 
-		processPlayerBullets(Enemy);
-		
+		Enemy e = (Enemy)Enemy;
+		processPlayerBullets(e);
+
 		//Check input
 		processCoinCounter(touches);
 	}
@@ -244,7 +238,7 @@ public class StateGame : ExaState {
 			Drawable Enemy = m_Enemies.GetChildAt(i) as Drawable;
 			if (Enemy != null) {
 				//Move
-				Enemy.x -= 7.0f;
+				Enemy.x -= 5.0f;
 				if (Enemy.x + (Enemy.getWidth() / 2) < 0) Deads.Add(Enemy);
 			}
 		}
@@ -272,23 +266,33 @@ public class StateGame : ExaState {
 	//Constants
 	protected const float HEALTH_MAX = 100;
 
-	protected void processPlayerBullets(Drawable enemy) {
+	protected void processPlayerBullets(Enemy enemy) {
 		//Initialize
-		List<FNode> Deads = new List<FNode>();
+		List<FNode> Deads 			= new List<FNode>();
+		List<FNode> HittedEnemies 	= new List<FNode>();
 		
 		//For each child in the container
 		for (int i = 0; i < m_PlayerBullets.GetChildCount(); i++) {
 			//Get enemy
-			Drawable Bullet = m_PlayerBullets.GetChildAt(i) as Drawable;
+			PlayerBullet Bullet = m_PlayerBullets.GetChildAt(i) as PlayerBullet;
 			if (Bullet != null) {
 				//Move
-				Bullet.x += 10.0f;
+				Bullet.x += 15.0f;
 				if (Bullet.x + (Bullet.getWidth() / 2) > Futile.screen.width) Deads.Add(Bullet);
+				if (enemy != null && !Bullet.ShouldBeTouched() && Bullet.doesCollide(enemy)) {
+					HittedEnemies.Add(enemy);
+					Bullet.EnableTouchChecking();
+				}			
 			}
 		}
 		
-		//Remove dead coins
+		//Remove deads
 		for (int i = 0; i < Deads.Count; i++) m_PlayerBullets.RemoveChild(Deads[i]);
+
+		//Activate hitted enemies
+		foreach(Enemy hitted in HittedEnemies) {
+			hitted.EnableTouchChecking();
+		}
 		
 		//Spawn
 		m_PlayerBulletTimer -= Time.deltaTime;
@@ -301,9 +305,9 @@ public class StateGame : ExaState {
 			
 			//Add
 			m_PlayerBullets.AddChild(bullet);
-			
+
 			//Reset
-			m_PlayerBulletTimer = 1.0f;
+			m_PlayerBulletTimer = 0.75f;
 		}
 	}
 
