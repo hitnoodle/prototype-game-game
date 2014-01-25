@@ -32,10 +32,13 @@ public class StateGame : ExaState {
 		AddChild(Base);
 		
 		//Create components
-		m_Exa 		= new Exa();
-		m_Enemies	= new FContainer();
+		m_Exa 			= new Exa();
+		m_Enemies		= new FContainer();
+		m_PlayerBullets	= new FContainer();
+
 		AddChild(m_Enemies);
 		AddChild(m_Exa);
+		AddChild(m_PlayerBullets);
 		
 		//Create interface
 		m_ScoreCounter 		= new FLabel("font", "");
@@ -87,10 +90,13 @@ public class StateGame : ExaState {
 		if (Enemy != null) {
 			//Move player
 			if (Enemy.y < m_Exa.y - 8) 		m_Exa.y -= 8;
-			else if (Enemy.y > m_Exa.y + 8) 	m_Exa.y += 8;
-			else 								m_Exa.y = Enemy.y;
+			else if (Enemy.y > m_Exa.y + 8) m_Exa.y += 8;
+			else 							m_Exa.y = Enemy.y;
 		}
-		
+
+		Enemy e = (Enemy)Enemy;
+		processPlayerBullets(e);
+
 		//Check input
 		processCoinCounter(touches);
 	}
@@ -273,7 +279,7 @@ public class StateGame : ExaState {
 			Drawable Enemy = m_Enemies.GetChildAt(i) as Drawable;
 			if (Enemy != null) {
 				//Move
-				Enemy.x -= 7.0f;
+				Enemy.x -= 5.0f;
 				if (Enemy.x + (Enemy.getWidth() / 2) < 0) Deads.Add(Enemy);
 			}
 		}
@@ -285,13 +291,12 @@ public class StateGame : ExaState {
 		m_EnemyTimer -= Time.deltaTime;
 		if (m_EnemyTimer <= 0f) {
 			//Create
-			Drawable Enemy	= new Drawable("exa-walk");
-			Enemy.x 		= Futile.screen.width + (Enemy.getWidth() / 2.0f);
-			Enemy.y			= Futile.screen.height / 12.0f * (float)(Random.Range(2, 12));
-			Enemy.setColor(1, 0, 0, 1);
+			float X 	= Futile.screen.width + 61.0f; //Hardcode width / 2
+			float Y		= Futile.screen.height / 12.0f * (float)(Random.Range(3, 10));
+			Enemy enemy = new Enemy(X,Y);
 			
 			//Add
-			m_Enemies.AddChild(Enemy);
+			m_Enemies.AddChild(enemy);
 			
 			//Reset
 			m_EnemyTimer = Random.Range(1, 9) / 2.0f;
@@ -302,18 +307,65 @@ public class StateGame : ExaState {
 	//Constants
 	protected const float HEALTH_MAX = 100;
 
+	protected void processPlayerBullets(Enemy enemy) {
+		//Initialize
+		List<FNode> Deads 			= new List<FNode>();
+		List<FNode> HittedEnemies 	= new List<FNode>();
+		
+		//For each child in the container
+		for (int i = 0; i < m_PlayerBullets.GetChildCount(); i++) {
+			//Get enemy
+			PlayerBullet Bullet = m_PlayerBullets.GetChildAt(i) as PlayerBullet;
+			if (Bullet != null) {
+				//Move
+				Bullet.x += 15.0f;
+				if (Bullet.x + (Bullet.getWidth() / 2) > Futile.screen.width) Deads.Add(Bullet);
+				if (enemy != null && !Bullet.ShouldBeTouched() && Bullet.doesCollide(enemy)) {
+					HittedEnemies.Add(enemy);
+					Bullet.EnableTouchChecking();
+				}			
+			}
+		}
+		
+		//Remove deads
+		for (int i = 0; i < Deads.Count; i++) m_PlayerBullets.RemoveChild(Deads[i]);
+
+		//Activate hitted enemies
+		foreach(Enemy hitted in HittedEnemies) {
+			hitted.EnableTouchChecking();
+		}
+		
+		//Spawn
+		m_PlayerBulletTimer -= Time.deltaTime;
+		if (m_PlayerBulletTimer <= 0f && enemy != null && enemy.y == m_Exa.y) {
+			//Create
+			Vector2 playerPos 	= m_Exa.GetPosition();
+			float X 			= playerPos.x + 10.0f;
+			float Y				= playerPos.y;
+			PlayerBullet bullet = new PlayerBullet(X,Y);
+			
+			//Add
+			m_PlayerBullets.AddChild(bullet);
+
+			//Reset
+			m_PlayerBulletTimer = 0.75f;
+		}
+	}
+
 	//Data
 	protected int 			m_Score;
 	protected int			m_Error;
-	protected float 		m_Health;
-	protected float 		m_EnemyTimer;
 	protected List<float> 	m_HealthChanges;
 	protected List<float> 	m_ScoreCounterTimers;
 	protected List<float> 	m_HealthCounterTimers;
+	protected float 		m_PlayerBulletTimer;
+	protected float 		m_EnemyTimer;
+	protected float 		m_Health;
 	
 	//Components
 	protected Exa			m_Exa;
 	protected FContainer	m_Enemies;
+	protected FContainer	m_PlayerBullets;
 	
 	//Interface
 	protected FLabel 	m_ScoreCounter;
