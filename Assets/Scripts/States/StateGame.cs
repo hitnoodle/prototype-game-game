@@ -5,10 +5,6 @@ using UnityEngine;
 public class StateGame : ExaState {
 	public StateGame(): base(GAME) {
 		//Initialize
-		m_Score 				= 0;
-		m_Error					= 0;
-		m_EnemyTimer			= 2.0f;
-		m_Health				= HEALTH_MAX;
 		m_ScoreCounterTimers	= new List<float>();
 		m_HealthCounterTimers	= new List<float>();
 		m_HealthChanges			= new List<float>();
@@ -62,16 +58,12 @@ public class StateGame : ExaState {
 			isVisible = false
 		};
 		
-		//Prepare
-		m_Error--;
+		//Add
 		AddChild(m_ScoreCounter);
 		AddChild(m_ScoreOverlay);
 		AddChild(m_ErrorCounter);
 		AddChild(m_HealthCounter);
 		AddChild(m_HealthOverlay);
-		incrementError();
-		increaseScore(0);
-		changeHealth();
 	}
 	
 	public void start() {
@@ -82,11 +74,36 @@ public class StateGame : ExaState {
 		m_ErrorCounter.isVisible = true;
 		m_ScoreCounter.isVisible = true;
 		m_HealthCounter.isVisible = true;
+		
+		//Start
+		setup();
+	}
+	
+	public void setup() {
+		//Initialize
+		m_Score 			= 0;
+		m_Error				= 0;
+		m_Health			= HEALTH_MAX;
+		m_Gameover			= false;
+		m_EnemyTimer		= 2.0f;
+		m_PlayerBulletTimer	= 0;
+		m_Enemies.RemoveAllChildren();
+		m_PlayerBullets.RemoveAllChildren();
+		m_HealthCounterTimers.Clear();
+		m_ScoreCounterTimers.Clear();
+		m_HealthChanges.Clear();
+		
+		//Prepare interface
+		m_Error--;
+		incrementError();
+		increaseScore(0);
+		changeHealth();
 	}
 
 	public override void onUpdate(FTouch[] touches) {
 		//If not started
-		if (!m_Started) StateManager.instance.goTo(TITLE, new object[] { this }, false);
+		if (!m_Started) 		StateManager.instance.goTo(TITLE, new object[] { this }, false);
+		else if (m_Gameover)	StateManager.instance.goTo(RESULT, new object[] { this }, false);
 		else {
 			//Update
 			m_Exa.update();
@@ -172,6 +189,7 @@ public class StateGame : ExaState {
 	protected void incrementError() {
 		//Increase
 		m_Error++;
+		if (m_Error > 3) m_Gameover = true;
 		
 		//Refresh
 		m_ErrorCounter.text 	= "Error: " + m_Error;
@@ -346,6 +364,7 @@ public class StateGame : ExaState {
 			float X 	= Futile.screen.width + 61.0f; //Hardcode width / 2
 			float Y		= Futile.screen.height / 12.0f * (float)(Random.Range(3, 10));
 			Enemy enemy = new Enemy(X,Y);
+			incrementError();
 			
 			//Add
 			m_Enemies.AddChild(enemy);
@@ -408,6 +427,7 @@ public class StateGame : ExaState {
 	protected int 			m_Score;
 	protected int			m_Error;
 	protected bool			m_Started;
+	protected bool			m_Gameover;
 	protected List<float> 	m_HealthChanges;
 	protected List<float> 	m_ScoreCounterTimers;
 	protected List<float> 	m_HealthCounterTimers;

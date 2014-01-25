@@ -19,6 +19,7 @@ public class StateFactory {
 			break;
 
 		case ExaState.RESULT:
+			if (parameters != null && parameters.Length >= 1) NewState = new StateResult((StateGame)parameters[0]);
 			break;
 		}
 
