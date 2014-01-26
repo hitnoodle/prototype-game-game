@@ -24,7 +24,7 @@ public class StateTitle : ExaState {
 		AddChild(Credit1);*/
 
 		//Play music
-		FSoundManager.PlayMusic("bgm", 0.3f);
+		FSoundManager.PlayMusic("bgm", 1f);
 	}
 
 	public override void onUpdate(FTouch[] touches) {

@@ -187,12 +187,12 @@ public class StateGame : ExaState {
 	
 	protected void changeHealth() {
 		//If there's change
-		if (m_HealthCounterTimers.Count > 0) m_HealthCounterTimers.RemoveAt(0);
 		if (m_HealthChanges.Count > 0) {
 			//Change health
 			m_Health += m_HealthChanges[0];
-			m_HealthChanges.RemoveAt(0);
 		}
+		m_HealthCounterTimers.Clear();
+		m_HealthChanges.Clear();
 		
 		//Refresh
 		m_HealthBar.height	= 34;
@@ -220,7 +220,7 @@ public class StateGame : ExaState {
 			FSoundManager.PlaySound("gameover");
 
 			//Log
-			logConsole("[Error] Engine: Too many errors. Game crashed");
+			logConsole("[ERROR] Engine: Too many errors. Game crashed");
 		}
 		
 		//Refresh
@@ -352,7 +352,7 @@ public class StateGame : ExaState {
 				//Remove
 				if (m_ScoreOverlay.isVisible) {
 					//Log
-					logConsole("[Error] UIHandler: NullException. Couldn't get score data " + (m_Error + 1) + "/" + ERROR_MAX);
+					logConsole("[ERROR] UIHandler: NullException. Couldn't get score data " + (m_Error + 1) + "/" + ERROR_MAX);
 
 					incrementError();
 				}
@@ -400,7 +400,7 @@ public class StateGame : ExaState {
 				//Remove
 				if (m_HealthOverlay.isVisible) {
 					//Log
-					logConsole("[Error] UIHandler: NullException. Couldn't get health data " + (m_Error + 1) + "/" + ERROR_MAX);
+					logConsole("[ERROR] UIHandler: NullException. Couldn't get health data " + (m_Error + 1) + "/" + ERROR_MAX);
 
 					incrementError();
 				}
@@ -514,12 +514,12 @@ public class StateGame : ExaState {
 					enemy.Attack();
 
 					//Log
-					logConsole("[LOG] Enemy: Shooting bullet");
+					//logConsole("[LOG] Enemy: Shooting bullet");
 				}
 
 				if (enemy.ShouldBeDead()) {
 					//Log
-					logConsole("[Error] Memory Leak: Enemy not deleted " + (m_Error + 1) + "/" + ERROR_MAX);
+					logConsole("[ERROR] Memory Leak: Enemy not deleted " + (m_Error + 1) + "/" + ERROR_MAX);
 
 					incrementError();
 				}
@@ -551,11 +551,11 @@ public class StateGame : ExaState {
 			m_EnemyShootTimer.Add(ENEMY_FIRST_SHOOT_INTERVAL);
 			
 			//Reset
-			m_EnemyTimer = Random.Range(2, 5);
-			if (m_EnemyTimer > 2) m_EnemyTimer -= 1;
+			m_EnemyTimer = Random.Range(1, 9) / 2.0f;
+			if (m_EnemyTimer > 1) m_EnemyTimer -= 1;
 
 			//Log
-			logConsole("[LOG] Enemy: Spawned");
+			//logConsole("[LOG] Enemy: Spawned");
 		}
 	}
 
@@ -575,7 +575,7 @@ public class StateGame : ExaState {
 
 				if (Bullet.ShouldBeDead()) {
 					//Log
-					logConsole("[Error] Memory Leak: PlayerBullet not deleted " + (m_Error + 1) + "/" + ERROR_MAX);
+					logConsole("[ERROR] Memory Leak: PlayerBullet not deleted " + (m_Error + 1) + "/" + ERROR_MAX);
 
 					Deads.Add(Bullet);
 					incrementError();
@@ -617,7 +617,7 @@ public class StateGame : ExaState {
 			m_PlayerBulletTimer = 1.5f;
 
 			//Log
-			logConsole("[LOG] Player: Shooting bullet");
+			//logConsole("[LOG] Player: Shooting bullet");
 		}
 	}
 
