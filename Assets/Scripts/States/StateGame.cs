@@ -10,7 +10,6 @@ public class StateGame : ExaState {
 		m_HealthChanges			= new List<float>();
 		m_EnemyShootTimer		= new List<float>();
 		m_Started				= false;
-
 		m_ConsoleLog 			= new string[CONSOLE_MAX_LINE];
 		for(int i=0;i<CONSOLE_MAX_LINE;i++) m_ConsoleLog[i] = "";
 	
@@ -48,7 +47,7 @@ public class StateGame : ExaState {
 		//Add
 		AddChild(m_HealthBar);
 		AddChild(m_HealthGauge);
-		AddChild(m_ErrorCounter);
+		//AddChild(m_ErrorCounter);
 		AddChild(m_ScoreCounter);
 		AddChild(m_ScoreOverlay);
 		AddChild(m_HealthOverlay);
@@ -87,7 +86,7 @@ public class StateGame : ExaState {
 		m_Gameover				= false;
 		m_EnemyTimer			= 2.0f;
 		m_PlayerBulletTimer		= 0;
-		m_PlayerBulletBorder 	= Constants.UNITY_CANVAS_RIGHT - 32;
+		m_PlayerBulletBorder 	= Constants.UNITY_CANVAS_RIGHT - 38;
 		m_PlayerBullets.RemoveAllChildren();
 		m_EnemyBullets.RemoveAllChildren();
 		m_Enemies.RemoveAllChildren();
@@ -114,7 +113,7 @@ public class StateGame : ExaState {
 	public override void onUpdate(FTouch[] touches) {
 		//If not started
 		if (!m_Started) 		StateManager.instance.goTo(TITLE, new object[] { this }, false);
-		else if (m_Gameover)	StateManager.instance.goTo(RESULT, new object[] { this }, false);
+		else if (m_Gameover)	StateManager.instance.goTo(RESULT, new object[] { this, m_Health }, false);
 		else {
 			//Update
 			m_Exa.update();
@@ -206,6 +205,9 @@ public class StateGame : ExaState {
 		//Refresh overlay
 		m_HealthOverlay.x = m_HealthBar.x + (m_HealthBar.width * 0.5f);
 		m_HealthOverlay.y = m_HealthBar.y;
+		
+		//DOne
+		if (m_Health <= 0) m_Gameover = true;
 	}
 	
 	protected void incrementError() { incrementError(true); }
