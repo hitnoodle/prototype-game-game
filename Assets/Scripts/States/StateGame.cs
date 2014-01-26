@@ -326,7 +326,6 @@ public class StateGame : ExaState {
 		if (m_Background11.x <= Constants.UNITY_CANVAS_LEFT - (Constants.UNITY_CANVAS_WIDTH / 2f)) {
 			m_Background11.x += Constants.UNITY_CANVAS_WIDTH;
 			m_Background12.x += Constants.UNITY_CANVAS_WIDTH - 1;
-			m_Background12.x += Constants.UNITY_CANVAS_WIDTH;
 
 			//Log
 			logConsole("[LOG] ParallaxBackground: Layer 1 is now looping");
@@ -334,7 +333,6 @@ public class StateGame : ExaState {
 		if (m_Background21.x <= Constants.UNITY_CANVAS_LEFT - (Constants.UNITY_CANVAS_WIDTH / 2f)) {
 			m_Background21.x += Constants.UNITY_CANVAS_WIDTH;
 			m_Background22.x += Constants.UNITY_CANVAS_WIDTH - 1;
-			m_Background22.x += Constants.UNITY_CANVAS_WIDTH;
 
 			//Log
 			logConsole("[LOG] ParallaxBackground: Layer 2 is now looping");
@@ -502,12 +500,16 @@ public class StateGame : ExaState {
 				enemy.UpdateDuration(Time.deltaTime);
 				m_EnemyShootTimer[i] -= Time.deltaTime;
 				if (m_EnemyShootTimer[i] <= 0) {
+					//Shoot bullet
 					m_EnemyShootTimer[i] = ENEMY_SHOOT_INTERVAL;
 
 					EnemyBullet bullet = new EnemyBullet(enemy.GetPosition().x - 10, enemy.GetPosition().y);
 					bullet.SetTarget(m_Exa.GetPosition());
 
 					m_EnemyBullets.AddChild(bullet);
+
+					//Animate enemy
+					enemy.Attack();
 
 					//Log
 					logConsole("[LOG] Enemy: Shooting bullet");

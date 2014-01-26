@@ -10,6 +10,7 @@ public class Enemy : Collidable {
 		
 		//Create animation
 		m_Animated.addAnimation(new FAnimation(DEFAULT_ANIMATION, new int[] { 1, 2 }, 180, true));
+		m_Animated.addAnimation(new FAnimation(ATTACK_ANIMATION, new int[] 	{ 3, 4 }, 150, false));
 		m_Animated.play(DEFAULT_ANIMATION);
 	}
 
@@ -21,6 +22,14 @@ public class Enemy : Collidable {
 	}
 
 	public void UpdateDuration(float duration) {
+		//What the fuck is this shit
+		if (m_Animated.currentAnim.name == ATTACK_ANIMATION) {
+			if (m_AttackTimer <= 0) {
+				m_Animated.play(DEFAULT_ANIMATION);
+				m_AttackTimer = 0;
+			} else m_AttackTimer -= duration;
+		}
+
 		if (m_Activated && !m_Overlay.isVisible) return;
 		
 		m_ActivatedDuration -= duration;
@@ -46,12 +55,18 @@ public class Enemy : Collidable {
 		return retval;
 	}
 
-	protected float 	m_ActivatedDuration;
-	protected bool 		m_Activated;
-	protected bool 		m_Dead;
-	protected FSprite	m_Overlay;
-	protected float 	m_ShootTimer;
+	public void Attack() {
+		m_Animated.play(ATTACK_ANIMATION);
+		m_AttackTimer = 0.3f;
+	}
+
+	protected float 		m_ActivatedDuration;
+	protected bool 			m_Activated;
+	protected bool 			m_Dead;
+	protected FSprite		m_Overlay;
+	protected float 		m_AttackTimer;
 
 	protected const float OVERLAY_DURATION 		= 0.75f;
 	protected const string DEFAULT_ANIMATION	= "default";
+	protected const string ATTACK_ANIMATION		= "attack";
 }
