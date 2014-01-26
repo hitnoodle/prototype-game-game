@@ -8,9 +8,13 @@ public class StateTitle : ExaState {
 		m_Time		= BLINK_DURATION * 2;
 		m_StartTime = START_DURATION * 2;
 		
+		//Create background
+		FSprite Background	= new FSprite("rect") { x = Futile.screen.halfWidth, y = Futile.screen.halfHeight, width = Futile.screen.width, height = Futile.screen.height, color = new Color(0, 0, 0, 0.5f) };
+		AddChild(Background);
+		
 		//Create stuff
-		m_Title			= new FLabel("font", "ANGRY CHICKEN SAGA") 		{ x = Constants.UNITY_CENTER_X, y = Constants.UNITY_CANVAS_BOTTOM + (Constants.UNITY_CANVAS_HEIGHT * 0.75f) };
-		m_Instruction1	= new FLabel("font", "Click screen to play") 	{ x = Constants.UNITY_CENTER_X, y = Constants.UNITY_CANVAS_BOTTOM + (Constants.UNITY_CANVAS_HEIGHT * 0.2f) };
+		m_Title			= new FSprite("logo") 						{ x = Futile.screen.halfWidth, y = Futile.screen.height * 0.6f };
+		m_Instruction1	= new FLabel("font", "Tap screen to play") 	{ x = Futile.screen.halfWidth, y = Futile.screen.height * 0.2f };
 		AddChild(m_Instruction1);
 		AddChild(m_Title);
 
@@ -56,8 +60,8 @@ public class StateTitle : ExaState {
 				m_Game.start();
 			} else {
 				//Move
-				m_Title.y = Constants.UNITY_CANVAS_BOTTOM + (Constants.UNITY_CANVAS_HEIGHT * 0.75f);
-				m_Title.y += ((Constants.UNITY_CANVAS_BOTTOM + (Constants.UNITY_CANVAS_HEIGHT * 0.25f)) + (m_Title.textRect.height / 2)) * (START_DURATION - m_StartTime) / START_DURATION;
+				m_Title.y = Futile.screen.height * 0.6f;
+				m_Title.y += ((Futile.screen.height * 0.4f) + (m_Title.textureRect.height / 2)) * (START_DURATION - m_StartTime) / START_DURATION;
 			}
 		}
 	}
@@ -70,6 +74,6 @@ public class StateTitle : ExaState {
 	protected float 	m_Time;
 	protected float 	m_StartTime;
 	protected FLabel 	m_Instruction1;
-	protected FLabel	m_Title;
+	protected FSprite	m_Title;
 	protected StateGame m_Game;
 }
